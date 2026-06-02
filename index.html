@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Markdown 转富文本</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background: #1a1a2e;
+      color: #e0e0e0;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .header {
+      padding: 12px 24px;
+      background: #16213e;
+      border-bottom: 1px solid #0f3460;
+      text-align: center;
+      flex-shrink: 0;
+    }
+    .header h1 {
+      font-size: 1.2rem;
+      font-weight: 600;
+      color: #e94560;
+      letter-spacing: 1px;
+    }
+
+    .container {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+    }
+
+    /* --- 输入区 --- */
+    .input-area {
+      flex: 0 0 45%;
+      display: flex;
+      flex-direction: column;
+      padding: 12px 20px 6px;
+      min-height: 0;
+    }
+    .input-area label {
+      font-size: 0.8rem;
+      color: #a0a0b0;
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    .input-area textarea {
+      flex: 1;
+      min-height: 0;
+      padding: 14px;
+      border: 1px solid #0f3460;
+      border-radius: 8px;
+      background: #16213e;
+      color: #e0e0e0;
+      font-family: "JetBrains Mono", "Fira Code", "Consolas", monospace;
+      font-size: 0.9rem;
+      line-height: 1.6;
+      resize: none;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .input-area textarea:focus {
+      border-color: #e94560;
+    }
+    .input-area textarea::placeholder {
+      color: #505070;
+    }
+
+    /* --- 按钮区 --- */
+    .toolbar {
+      flex: 0 0 10%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .copy-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 28px;
+      background: #e94560;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      font-size: 0.95rem;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.15s;
+      letter-spacing: 0.5px;
+    }
+    .copy-btn:hover { background: #d63850; transform: translateY(-1px); }
+    .copy-btn:active { transform: translateY(0); }
+    .copy-btn.copied {
+      background: #2ecc71;
+      pointer-events: none;
+    }
+    .toast {
+      position: fixed;
+      top: 56px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #2ecc71;
+      color: #fff;
+      padding: 8px 20px;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s;
+      z-index: 100;
+    }
+    .toast.show { opacity: 1; }
+
+    /* --- 预览区 --- */
+    .preview-area {
+      flex: 0 0 45%;
+      display: flex;
+      flex-direction: column;
+      padding: 6px 20px 12px;
+      min-height: 0;
+    }
+    .preview-area label {
+      font-size: 0.8rem;
+      color: #a0a0b0;
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    .preview-box {
+      flex: 1;
+      min-height: 0;
+      padding: 14px;
+      border: 1px solid #0f3460;
+      border-radius: 8px;
+      background: #16213e;
+      overflow-y: auto;
+      line-height: 1.7;
+      font-size: 0.95rem;
+    }
+    .preview-box:empty::after {
+      content: "在输入框中输入 Markdown，此处将实时渲染预览";
+      color: #505070;
+      font-style: italic;
+    }
+
+    /* --- 富文本样式 --- */
+    .preview-box h1 { font-size: 1.8rem; margin: 16px 0 8px; padding-bottom: 6px; border-bottom: 1px solid #0f3460; color: #e94560; }
+    .preview-box h2 { font-size: 1.5rem; margin: 14px 0 6px; color: #e94560; }
+    .preview-box h3 { font-size: 1.25rem; margin: 12px 0 4px; color: #e94560; }
+    .preview-box h4, .preview-box h5, .preview-box h6 { margin: 10px 0 4px; color: #e94560; }
+
+    .preview-box p { margin: 6px 0; }
+
+    .preview-box a { color: #e94560; text-decoration: underline; }
+
+    .preview-box strong { color: #fff; font-weight: 700; }
+
+    .preview-box em { font-style: italic; color: #c0c0d0; }
+
+    .preview-box code {
+      background: #0f3460;
+      padding: 2px 6px;
+      border-radius: 3px;
+      font-family: "JetBrains Mono", "Fira Code", "Consolas", monospace;
+      font-size: 0.85rem;
+      color: #f0c0a0;
+    }
+
+    .preview-box pre {
+      background: #0a0a1a;
+      border: 1px solid #0f3460;
+      border-radius: 6px;
+      padding: 12px;
+      overflow-x: auto;
+      margin: 10px 0;
+    }
+    .preview-box pre code {
+      background: none;
+      padding: 0;
+      font-size: 0.85rem;
+      color: #c8d6e5;
+    }
+
+    .preview-box ul, .preview-box ol { margin: 6px 0; padding-left: 22px; }
+    .preview-box li { margin: 2px 0; }
+
+    .preview-box hr { border: none; border-top: 1px solid #0f3460; margin: 14px 0; }
+
+    .preview-box blockquote {
+      border-left: 3px solid #e94560;
+      padding-left: 12px;
+      margin: 8px 0;
+      color: #a0a0b0;
+      font-style: italic;
+    }
+
+    .preview-box img { max-width: 100%; border-radius: 4px; }
+
+    .preview-box table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 10px 0;
+      font-size: 0.9rem;
+    }
+    .preview-box thead { background: #0f3460; }
+    .preview-box th {
+      padding: 8px 12px;
+      text-align: left;
+      font-weight: 700;
+      border: 1px solid #1a3a6a;
+      color: #e94560;
+    }
+    .preview-box td {
+      padding: 8px 12px;
+      border: 1px solid #0f3460;
+      vertical-align: top;
+    }
+    .preview-box tbody tr:nth-child(even) { background: rgba(15, 52, 96, 0.3); }
+    .preview-box tbody tr:hover { background: rgba(233, 69, 96, 0.1); }
+
+    /* --- 响应式 --- */
+    @media (max-width: 768px) {
+      .input-area { padding: 8px 10px 4px; flex: 0 0 45%; }
+      .preview-area { padding: 4px 10px 8px; flex: 0 0 45%; }
+      .toolbar { flex: 0 0 10%; }
+      .copy-btn { padding: 8px 20px; font-size: 0.85rem; }
+      .header { padding: 8px 16px; }
+      .header h1 { font-size: 1rem; }
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>Markdown → 富文本</h1>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <div class="container">
+    <div class="input-area">
+      <label>Markdown 输入</label>
+      <textarea id="input" placeholder="在此粘贴或输入 Markdown 内容，下方将实时渲染…
+
+# 标题
+**粗体** *斜体* ~~删除线~~
+[链接](https://example.com)
+- 列表项
+​```js
+// 代码块
+console.log('hello');
+​```"></textarea>
+    </div>
+
+    <div class="toolbar">
+      <button class="copy-btn" id="copyBtn">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+        复制富文本
+      </button>
+    </div>
+
+    <div class="preview-area">
+      <label>富文本预览</label>
+      <div class="preview-box" id="preview"></div>
+    </div>
+  </div>
+
+  <script>
+    const input = document.getElementById('input');
+    const preview = document.getElementById('preview');
+    const copyBtn = document.getElementById('copyBtn');
+    const toast = document.getElementById('toast');
+
+    /* ============ Markdown 解析器 ============ */
+
+    function parseInline(line) {
+      // 1. 保护行内代码（必须最先处理，防止内部格式被误解析）
+      const codes = [];
+      line = line.replace(/`([^`]+)`/g, (_, code) => {
+        codes.push(escapeHtml(code));
+        return `\x00C${codes.length - 1}\x00`;
+      });
+
+      // 2. 图片（必须先于链接处理）
+      line = line.replace(/!\[([^\]]*)\]\(([^)\s]+(?:\s"[^"]*")?)\)/g,
+        '<img src="$2" alt="$1">');
+      // 3. 链接
+      line = line.replace(/\[([^\]]+)\]\(([^)\s]+(?:\s"[^"]*")?)\)/g,
+        '<a href="$2" target="_blank" rel="noopener">$1</a>');
+      // 4. 粗斜体（(?!\s) 防止 * 后跟空格时误匹配乘法等场景）
+      line = line.replace(/\*\*\*(?!\s)([^*]+)\*\*\*/g, '<strong><em>$1</em></strong>');
+      // 5. 粗体
+      line = line.replace(/\*\*(?!\s)([^*]+)\*\*/g, '<strong>$1</strong>');
+      // 6. 斜体
+      line = line.replace(/\*(?!\s)([^*]+)\*/g, '<em>$1</em>');
+      // 7. 删除线
+      line = line.replace(/~~([^~]+)~~/g, '<del>$1</del>');
+
+      // 8. 还原行内代码
+      line = line.replace(/\x00C(\d+)\x00/g, (_, i) => `<code>${codes[+i]}</code>`);
+
+      return line;
+    }
+
+    function parseInlineWithoutCode(line) {
+      // 用于在代码块中跳过行内代码的双重解析：先替换掉行内代码占位，处理其他，再还原
+      // 简化处理：直接返回文字
+      return line.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+
+    function convert(text) {
+      if (!text.trim()) return '';
+
+      const lines = text.split('\n');
+      const result = [];
+      const indentStack = [];
+      let inCodeBlock = false;
+      let codeContent = [];
+      let codeLang = '';
+      let listType = null; // 'ul' | 'ol' | null
+
+      const flushList = () => {
+        if (listType) {
+          result.push(listType === 'ol' ? '</ol>' : '</ul>');
+          listType = null;
+        }
+      };
+
+      for (let i = 0; i < lines.length; i++) {
+        const raw = lines[i];
+
+        // 代码块
+        if (/^```/.test(raw.trim())) {
+          if (!inCodeBlock) {
+            flushList();
+            codeLang = raw.trim().slice(3).trim();
+            inCodeBlock = true;
+            codeContent = [];
+          } else {
+            const langAttr = codeLang ? ` class="language-${escapeHtml(codeLang)}"` : '';
+            result.push(`<pre><code${langAttr}>${codeContent.join('\n')}</code></pre>`);
+            inCodeBlock = false;
+            codeContent = [];
+            codeLang = '';
+          }
+          continue;
+        }
+
+        if (inCodeBlock) {
+          codeContent.push(escapeHtml(raw));
+          continue;
+        }
+
+        const trimmed = raw.trim();
+
+        // 空行
+        if (!trimmed) {
+          flushList();
+          continue;
+        }
+
+        // 标题
+        const hMatch = trimmed.match(/^(#{1,6})\s+(.+)$/);
+        if (hMatch) {
+          flushList();
+          const level = hMatch[1].length;
+          result.push(`<h${level}>${parseInline(hMatch[2])}</h${level}>`);
+          continue;
+        }
+
+        // 分割线（需先于表格检测，避免误判）
+        if (!trimmed.includes('|') && /^[-*_]{3,}\s*$/.test(trimmed)) {
+          flushList();
+          result.push('<hr>');
+          continue;
+        }
+
+        // 表格
+        if (isTableRow(trimmed) && i + 1 < lines.length && isTableSeparator(lines[i + 1])) {
+          flushList();
+          const headerCells = parseTableCells(trimmed);
+          const alignments = parseTableAlignments(lines[i + 1]);
+          const bodyRows = [];
+          i += 2; // 跳过表头行和分隔行
+          while (i < lines.length && isTableRow(lines[i].trim()) && !isTableSeparator(lines[i].trim())) {
+            bodyRows.push(parseTableCells(lines[i].trim()));
+            i++;
+          }
+          i--; // for 循环会 i++，回退一步
+          result.push(buildTable(headerCells, alignments, bodyRows));
+          continue;
+        }
+
+        // 引用
+        if (/^>\s?(.*)/.test(trimmed)) {
+          flushList();
+          const qContent = trimmed.replace(/^>\s?/, '');
+          result.push(`<blockquote><p>${parseInline(qContent)}</p></blockquote>`);
+          continue;
+        }
+
+        // 无序列表
+        const ulMatch = trimmed.match(/^[-*+]\s+(.+)$/);
+        if (ulMatch) {
+          if (listType !== 'ul') {
+            flushList();
+            result.push('<ul>');
+            listType = 'ul';
+          }
+          result.push(`<li>${parseInline(ulMatch[1])}</li>`);
+          continue;
+        }
+
+        // 有序列表
+        const olMatch = trimmed.match(/^\d+\.\s+(.+)$/);
+        if (olMatch) {
+          if (listType !== 'ol') {
+            flushList();
+            result.push('<ol>');
+            listType = 'ol';
+          }
+          result.push(`<li>${parseInline(olMatch[1])}</li>`);
+          continue;
+        }
+
+        // 普通段落
+        flushList();
+        result.push(`<p>${parseInline(trimmed)}</p>`);
+      }
+
+      flushList();
+
+      // 未闭合代码块
+      if (inCodeBlock && codeContent.length) {
+        result.push(`<pre><code>${codeContent.join('\n')}</code></pre>`);
+      }
+
+      return result.join('\n');
+    }
+
+    /* ============ GFM 表格 ============ */
+
+    function isTableRow(line) {
+      return line.trim().includes('|');
+    }
+
+    function isTableSeparator(line) {
+      const t = line.trim();
+      return /^\|?[\s]*:?-{3,}:?[\s]*\|/.test(t) && t.includes('-');
+    }
+
+    function parseTableCells(line) {
+      return line.trim()
+        .replace(/^\|/, '')
+        .replace(/\|$/, '')
+        .split('|')
+        .map(c => parseInline(c.trim()));
+    }
+
+    function parseTableAlignments(sep) {
+      return sep.trim()
+        .replace(/^\|/, '')
+        .replace(/\|$/, '')
+        .split('|')
+        .map(c => {
+          const s = c.trim();
+          if (s.startsWith(':') && s.endsWith(':')) return 'center';
+          if (s.endsWith(':')) return 'right';
+          return 'left';
+        });
+    }
+
+    function buildTable(headers, alignments, rows) {
+      let html = '<table><thead><tr>';
+      for (let i = 0; i < headers.length; i++) {
+        const al = alignments[i] ? ` style="text-align:${alignments[i]}"` : '';
+        html += `<th${al}>${headers[i]}</th>`;
+      }
+      html += '</tr></thead><tbody>';
+      for (const row of rows) {
+        html += '<tr>';
+        for (let i = 0; i < headers.length; i++) {
+          const al = alignments[i] ? ` style="text-align:${alignments[i]}"` : '';
+          html += `<td${al}>${row[i] || ''}</td>`;
+        }
+        html += '</tr>';
+      }
+      html += '</tbody></table>';
+      return html;
+    }
+
+    function escapeHtml(s) {
+      return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+
+    /* ============ 实时渲染 ============ */
+
+    function render() {
+      const md = input.value;
+      preview.innerHTML = convert(md);
+    }
+
+    input.addEventListener('input', render);
+    render();
+
+    /* ============ 复制：清洗 HTML + 生成纯文本 ============ */
+
+    function buildCleanHTML(html) {
+      const div = document.createElement('div');
+      div.innerHTML = html;
+
+      // 表格：仅保留结构样式，不加任何背景色
+      div.querySelectorAll('table').forEach(table => {
+        table.setAttribute('border', '1');
+        table.setAttribute('cellspacing', '0');
+        table.setAttribute('cellpadding', '4');
+        table.style.borderCollapse = 'collapse';
+        table.style.border = '1px solid #aaa';
+        table.style.margin = '10px 0';
+      });
+      div.querySelectorAll('th').forEach(th => {
+        th.style.border = '1px solid #aaa';
+        th.style.padding = '4px 8px';
+        th.style.fontWeight = 'bold';
+        th.style.textAlign = th.style.textAlign || 'left';
+      });
+      div.querySelectorAll('td').forEach(td => {
+        td.style.border = '1px solid #aaa';
+        td.style.padding = '4px 8px';
+        td.style.verticalAlign = 'top';
+      });
+
+      // 代码块：只保留等宽字体
+      div.querySelectorAll('code, pre').forEach(el => {
+        el.style.fontFamily = 'Consolas, "Courier New", monospace';
+      });
+
+      return div.innerHTML;
+    }
+
+    function buildPlainText(html) {
+      const div = document.createElement('div');
+      div.innerHTML = html;
+
+      // 表格 → tab 分隔
+      div.querySelectorAll('table').forEach(table => {
+        const lines = [];
+        table.querySelectorAll('tr').forEach((row, ri) => {
+          const cells = [...row.querySelectorAll('th, td')].map(c => c.textContent.trim());
+          if (cells.length) lines.push(cells.join('\t'));
+          if (ri === 0 && row.closest('thead')) {
+            lines.push(cells.map(() => '---').join('\t'));
+          }
+        });
+        const textNode = document.createTextNode('\n' + lines.join('\n') + '\n');
+        table.replaceWith(textNode);
+      });
+
+      // 有序列表 → 编号
+      div.querySelectorAll('ol').forEach(ol => {
+        ol.querySelectorAll(':scope > li').forEach((li, i) => {
+          li.prepend(`${i + 1}. `);
+        });
+      });
+      // 无序列表 → 圆点
+      div.querySelectorAll('ul > li').forEach(li => {
+        li.prepend('• ');
+      });
+
+      // 块级元素后加换行，保证纯文本不会粘成一片
+      div.querySelectorAll('p, h1, h2, h3, h4, h5, h6, li, pre, blockquote, ul, ol').forEach(el => {
+        el.append('\n');
+      });
+
+      let text = div.textContent || '';
+
+      // 清理多余空行与行尾空白
+      text = text.replace(/[ \t]+\n/g, '\n');
+      text = text.replace(/\n{3,}/g, '\n\n');
+      return text.trim();
+    }
+
+    /* ============ 复制富文本 ============ */
+
+    copyBtn.addEventListener('click', async () => {
+      const rawHTML = preview.innerHTML;
+      if (!rawHTML.trim()) return;
+
+      const cleanHTML = buildCleanHTML(rawHTML);
+      const plainText = buildPlainText(rawHTML);
+
+      try {
+        const item = new ClipboardItem({
+          'text/html': new Blob([cleanHTML], { type: 'text/html' }),
+          'text/plain': new Blob([plainText], { type: 'text/plain' })
+        });
+        await navigator.clipboard.write([item]);
+
+        copyBtn.classList.add('copied');
+        copyBtn.innerHTML = `
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+          已复制!
+        `;
+        showToast('富文本已复制到剪贴板');
+
+        setTimeout(() => {
+          copyBtn.classList.remove('copied');
+          copyBtn.innerHTML = `
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+            复制富文本
+          `;
+        }, 2000);
+      } catch {
+        try {
+          await navigator.clipboard.writeText(plainText);
+          showToast('已复制纯文本内容（含表格对齐）');
+        } catch {
+          showToast('复制失败，请手动选择预览区内容');
+        }
+      }
+    });
+
+    function showToast(msg) {
+      toast.textContent = msg;
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 2000);
+    }
+  </script>
+</body>
+</html>
