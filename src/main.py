@@ -19,16 +19,16 @@ app.mount("/static", StaticFiles(directory=str(BASE_DIR / "static")), name="stat
 @app.get("/", response_class=HTMLResponse)
 async def index(request: Request):
     """首页 — 文件上传界面"""
-    return templates.TemplateResponse("index.html", {"request": request})
+    return templates.TemplateResponse(request, "index.html")
 
 
 @app.post("/convert")
-async def convert(file: UploadFile = File(None), markdown_text: str = Form(None)):
+async def convert(file: UploadFile = File(None), markdown_text: str = Form("")):
     """转换端点 — 支持文件上传和直接粘贴文本"""
     # 获取输入内容
     if file and file.filename:
         content = (await file.read()).decode("utf-8")
-    elif markdown_text:
+    elif markdown_text.strip():
         content = markdown_text
     else:
         return HTMLResponse("<p>请上传文件或粘贴 Markdown 内容</p>", status_code=400)

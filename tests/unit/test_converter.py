@@ -36,6 +36,13 @@ class TestMarkdownToDocx:
         assert len(content) > 0
         buffer.close()
 
+    def test_all_heading_levels(self):
+        """所有标题层级 (h1-h6)"""
+        md = "# H1\n## H2\n### H3\n#### H4\n##### H5\n###### H6"
+        buffer = markdown_to_docx(md)
+        assert len(buffer.read()) > 0
+        buffer.close()
+
     def test_unicode_content(self):
         """3️⃣ 边界条件：Unicode 和表情符号"""
         buffer = markdown_to_docx("# Unicode 测试 🎉\n\n中文内容")
@@ -49,6 +56,68 @@ class TestMarkdownToDocx:
         buffer = markdown_to_docx(long_text)
         content = buffer.read()
         assert len(content) > 0
+        buffer.close()
+
+    def test_unordered_list(self):
+        """无序列表"""
+        md = "- item 1\n- item 2\n- item 3"
+        buffer = markdown_to_docx(md)
+        assert len(buffer.read()) > 0
+        buffer.close()
+
+    def test_ordered_list(self):
+        """有序列表"""
+        md = "1. first\n2. second\n3. third"
+        buffer = markdown_to_docx(md)
+        assert len(buffer.read()) > 0
+        buffer.close()
+
+    def test_table(self):
+        """表格"""
+        md = "| A | B |\n|---|---|\n| 1 | 2 |"
+        buffer = markdown_to_docx(md)
+        assert len(buffer.read()) > 0
+        buffer.close()
+
+    def test_blockquote(self):
+        """引用块"""
+        md = "> quoted text"
+        buffer = markdown_to_docx(md)
+        assert len(buffer.read()) > 0
+        buffer.close()
+
+    def test_link_in_paragraph(self):
+        """段落中的链接"""
+        md = "[click here](https://example.com)"
+        buffer = markdown_to_docx(md)
+        assert len(buffer.read()) > 0
+        buffer.close()
+
+    def test_bold_and_italic_inline(self):
+        """粗体和斜体内联元素"""
+        md = "**bold** and *italic* and `code`"
+        buffer = markdown_to_docx(md)
+        assert len(buffer.read()) > 0
+        buffer.close()
+
+    def test_pre_without_code_tag(self):
+        """pre 标签内无 code 子标签"""
+        buffer = markdown_to_docx("    indented code block")
+        assert len(buffer.read()) > 0
+        buffer.close()
+
+    def test_empty_content_generates_valid_docx(self):
+        """空 Markdown 仍生成有效 docx 容器"""
+        buffer = markdown_to_docx("")
+        content = buffer.read()
+        assert len(content) > 0
+        buffer.close()
+
+    def test_bold_italic_in_heading(self):
+        """标题中的粗体和斜体"""
+        md = "# **Bold** and *Italic* Heading"
+        buffer = markdown_to_docx(md)
+        assert len(buffer.read()) > 0
         buffer.close()
 
 
