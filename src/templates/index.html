@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Markdown 转 Word — 文件格式转换工具</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📄 Markdown → Word 转换器</h1>
+            <p class="subtitle">上传 .md 文件或粘贴 Markdown 文本，一键生成 .docx 文档</p>
+        </header>
+
+        <main>
+            <!-- 方式一：文件上传 -->
+            <section class="upload-section">
+                <h2>📁 文件上传</h2>
+                <form action="/convert" method="post" enctype="multipart/form-data">
+                    <div class="file-drop-area" id="dropZone">
+                        <input type="file" name="file" id="fileInput" accept=".md,.markdown,.txt">
+                        <label for="fileInput" class="file-label">
+                            <span class="drop-icon">⬆️</span>
+                            <span>拖拽 .md 文件到此处，或点击选择</span>
+                            <span class="file-hint">支持 .md / .markdown / .txt 格式</span>
+                        </label>
+                    </div>
+                    <button type="submit" class="btn btn-primary">转换为 Word 文档</button>
+                </form>
+            </section>
+
+            <div class="divider">
+                <span>或者</span>
+            </div>
+
+            <!-- 方式二：文本粘贴 -->
+            <section class="paste-section">
+                <h2>✏️ 直接粘贴 Markdown 内容</h2>
+                <form action="/convert" method="post">
+                    <textarea
+                        name="markdown_text"
+                        id="markdownInput"
+                        rows="12"
+                        placeholder="# 输入你的 Markdown 内容...
+
+## 支持
+- **粗体** 和 *斜体*
+- 代码块
+- 表格
+"></textarea>
+                    <button type="submit" class="btn btn-primary">转换为 Word 文档</button>
+                </form>
+            </section>
+        </main>
+
+        <footer>
+            <p>开源工具 · MIT 许可证</p>
+        </footer>
+    </div>
+
+    <script>
+        // 拖拽文件到上传区域
+        const dropZone = document.getElementById('dropZone');
+        const fileInput = document.getElementById('fileInput');
+
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.classList.add('dragover');
+        });
+
+        dropZone.addEventListener('dragleave', () => {
+            dropZone.classList.remove('dragover');
+        });
+
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('dragover');
+            if (e.dataTransfer.files.length) {
+                fileInput.files = e.dataTransfer.files;
+            }
+        });
+    </script>
+</body>
+</html>

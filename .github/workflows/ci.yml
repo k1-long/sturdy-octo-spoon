@@ -1,0 +1,77 @@
+# ============================================================
+# CI/CD Pipeline（第三层质量保证 — 自动化测试与部署）
+# ============================================================
+# 触发条件：每次 push 和 pull request
+# 检查项目：代码风格 → 单元测试 → 覆盖率 → 构建验证
+
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  # ── 代码风格检查 ────────────────────────────────────
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install lint tools
+        run: pip install ruff black isort
+      - name: Check formatting (black)
+        run: black --check --line-length 120 src/ tests/
+      - name: Check imports (isort)
+        run: isort --check --profile black --line-length 120 src/ tests/
+      - name: Check code quality (ruff)
+        run: ruff check src/ tests/
+
+  # ── 多版本测试矩阵 ──────────────────────────────────
+  test:
+    needs: lint
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.10", "3.11", "3.12", "3.13"]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install project + dev dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev]"
+
+      - name: Run tests with coverage
+        run: python -m pytest --cov=src --cov-report=xml --cov-report=term
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          files: coverage.xml
+          fail_ci_if_error: false
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+
+  # ── 构建验证 ────────────────────────────────────────
+  build:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install project
+        run: pip install -e ".[dev]"
+      - name: Verify package
+        run: python -c "from src.converter import markdown_to_docx; print('Build OK')"

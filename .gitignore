@@ -18,3 +18,22 @@ build/
 # Environment
 .env
 .env.local
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+*.egg
+
+# Test & Coverage
+htmlcov/
+.coverage
+.coverage.*
+coverage.xml
+*.cover
+.pytest_cache/
+
+# Pre-commit cache
+.cache/pre-commit/

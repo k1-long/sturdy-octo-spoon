@@ -1,0 +1,104 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.backends._legacy:_Backend"
+
+[project]
+name = "file-converter"
+version = "0.1.0"
+description = "文件格式转换工具 — Markdown 转 Word / HTML / PDF"
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "MIT"}
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+]
+dependencies = [
+    "fastapi>=0.110",
+    "uvicorn[standard]>=0.29",
+    "jinja2>=3.1",
+    "python-multipart>=0.0.9",
+    "python-docx>=1.1",
+    "markdown>=3.5",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+    "pytest-cov>=5.0",
+    "black>=24.0",
+    "isort>=5.13",
+    "ruff>=0.3",
+    "pre-commit>=3.6",
+    "httpx>=0.27",
+]
+
+[project.scripts]
+file-converter = "src.main:main"
+
+# ============================================================
+# 工具链配置（第二层质量保证 — 代码风格与检查）
+# ============================================================
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+addopts = "-v"
+pythonpath = ["src"]
+
+[tool.coverage.run]
+source = ["src"]
+branch = true
+
+[tool.coverage.report]
+# 覆盖率目标分层（第一层质量保证 — 测试验证）
+# 语句覆盖率 >= 90%，分支覆盖率 >= 80%，函数覆盖率 >= 95%
+fail_under = 80
+show_missing = true
+precision = 2
+
+[tool.coverage.html]
+directory = "htmlcov"
+
+[tool.black]
+line-length = 120
+target-version = ["py310", "py311", "py312", "py313"]
+exclude = '''
+/(
+    \.eggs
+  | \.git
+  | \.venv
+  | __pycache__
+  | build
+  | dist
+)/
+'''
+
+[tool.isort]
+profile = "black"
+line_length = 120
+skip = [".git", ".venv", "__pycache__", "build", "dist"]
+
+[tool.ruff]
+line-length = 120
+target-version = "py312"
+exclude = [".git", ".venv", "__pycache__", "build", "dist"]
+
+[tool.ruff.lint]
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # pyflakes
+    "I",   # isort
+    "B",   # flake8-bugbear
+    "C4",  # flake8-comprehensions
+    "UP",  # pyupgrade
+]
+ignore = ["E203", "E402", "E501"]  # E203 与 black 冲突; E402 模块级导入; E501 行长度由 formatter 管
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"

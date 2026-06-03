@@ -1,0 +1,53 @@
+# ============================================================
+# Pre-commit 配置文件（第二层质量保证 — 提交前代码检查）
+# ============================================================
+# 工作流：git commit → hooks 自动执行 → 全部通过 → 提交成功
+# 安装：pre-commit install
+# 手动运行：pre-commit run --all-files
+
+repos:
+  # ── 1️⃣ 基础检查 ──────────────────────────────────────
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.6.0
+    hooks:
+      - id: trailing-whitespace        # 移除行尾空白
+      - id: end-of-file-fixer          # 确保文件以换行符结束
+      - id: check-yaml                 # 检查 YAML 语法
+      - id: check-toml                 # 检查 TOML 语法
+      - id: check-json                 # 检查 JSON 语法
+      - id: check-merge-conflict       # 检查未解决的合并冲突
+      - id: debug-statements           # 检查遗留的调试语句 (breakpoint 等)
+      - id: check-case-conflict        # 检查文件名大小写冲突（Windows 尤其重要）
+      - id: check-added-large-files    # 阻止提交大文件 (>500KB)
+        args: ["--maxkb=500"]
+      - id: detect-private-key         # 检测私钥泄露
+
+  # ── 2️⃣ 代码格式化 ────────────────────────────────────
+  - repo: https://github.com/psf/black
+    rev: 24.4.2
+    hooks:
+      - id: black                     # Python 自动格式化
+        language_version: python3
+        args: ["--line-length=120"]
+
+  # ── 3️⃣ 导入排序 ──────────────────────────────────────
+  - repo: https://github.com/pycqa/isort
+    rev: 5.13.2
+    hooks:
+      - id: isort                     # 自动排序 import 语句
+        args: ["--profile", "black", "--line-length", "120"]
+
+  # ── 4️⃣ 代码质量检查（Ruff 替代 flake8）───────────────
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.4.4
+    hooks:
+      - id: ruff                      # 代码风格和错误检查
+        args: ["--fix"]
+      - id: ruff-format               # Ruff 原生格式化（与 black 兼容）
+
+  # ── 5️⃣ 提交信息规范 ──────────────────────────────────
+  - repo: https://github.com/commitizen-tools/commitizen
+    rev: v3.27.0
+    hooks:
+      - id: commitizen                # 规范化提交信息
+        stages: [commit-msg]
