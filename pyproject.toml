@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "file-converter"
 version = "0.1.0"
-description = "文件格式转换工具 — Markdown 转 Word / HTML / PDF"
+description = "Markdown 转 Word 文档转换工具"
 readme = "README.md"
 requires-python = ">=3.10"
 license = {text = "MIT"}
@@ -37,9 +37,6 @@ dev = [
     "pre-commit>=3.6",
     "httpx>=0.27",
 ]
-
-[project.scripts]
-file-converter = "src.main:main"
 
 # ============================================================
 # 工具链配置（第二层质量保证 — 代码风格与检查）

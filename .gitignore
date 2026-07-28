@@ -37,3 +37,6 @@ coverage.xml
 
 # Pre-commit cache
 .cache/pre-commit/
+
+# Claude Code
+.claude/

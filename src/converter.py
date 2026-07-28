@@ -4,7 +4,7 @@ from io import BytesIO
 
 from bs4 import BeautifulSoup
 from docx import Document
-from docx.shared import Pt, Inches
+from docx.shared import Pt
 from docx.oxml.ns import qn
 import markdown
 
@@ -38,8 +38,6 @@ def markdown_to_docx(md_text: str) -> BytesIO:
 
 def _process_element(node, doc, parent=None):
     """递归处理 HTML 节点树，写入 Word 文档"""
-    from docx.oxml import OxmlElement
-
     if node.name is None:
         # 文本节点
         text = str(node).strip()
@@ -94,45 +92,102 @@ def _process_element(node, doc, parent=None):
                 cells = row.find_all(["th", "td"])
                 for j, cell in enumerate(cells):
                     if j < cols:
-                        cell_text = cell.get_text(strip=True)
-                        table.cell(i, j).text = cell_text
+                        # 保留内联格式：清空默认段落，逐子节点处理
+                        cell_word = table.cell(i, j)
+                        cell_word.text = ""
+                        p = cell_word.paragraphs[0]
+                        for child in cell.children:
+                            _process_child_inline(child, p)
 
     elif tag in ("blockquote",):
+        # 引用块：添加缩进和斜体以在视觉上区分
         for child in node.children:
             if child.name:
-                _process_element(child, doc, parent)
+                _add_blockquote_paragraph(child, doc)
+
+    elif tag == "hr":
+        # 分割线：添加带底部边框的空段落
+        p = doc.add_paragraph()
+        pf = p.paragraph_format
+        pf.space_before = Pt(6)
+        pf.space_after = Pt(6)
+        pPr = p._p.get_or_add_pPr()
+        pBdr = pPr.makeelement(qn("w:pBdr"), {})
+        bottom = pBdr.makeelement(qn("w:bottom"), {
+            qn("w:val"): "single",
+            qn("w:sz"): "6",
+            qn("w:space"): "1",
+            qn("w:color"): "999999",
+        })
+        pBdr.append(bottom)
+        pPr.append(pBdr)
+
+    elif tag == "img":
+        # 图片：添加占位文字（python-docx 插入图片需要文件流，此处用 alt 文本替代）
+        alt = node.get("alt", "")
+        src = node.get("src", "")
+        p = doc.add_paragraph()
+        run = p.add_run(f"[图片: {alt}]" if alt else "[图片]")
+        run.italic = True
+        run.font.color.rgb = None  # 灰色
 
     else:
         for child in node.children:
             _process_element(child, doc, parent)
 
 
-def _process_child_inline(node, paragraph):
-    """处理段落/标题内的内联元素（粗体、斜体、代码、链接、纯文本）"""
+def _process_child_inline(node, paragraph, **styles):
+    """递归处理段落/标题内的内联元素（粗体、斜体、代码、链接、纯文本），支持嵌套格式
+
+    通过 styles 参数传递累积的样式（bold/italic/underline/font_name/font_size）。
+    """
     if node.name is None:
         text = str(node)
         if text.strip():
-            paragraph.add_run(text)
+            run = paragraph.add_run(text)
+            if styles.get("bold"):
+                run.bold = True
+            if styles.get("italic"):
+                run.italic = True
+            if styles.get("underline"):
+                run.underline = True
+            fn = styles.get("font_name")
+            if fn:
+                run.font.name = fn
+            fs = styles.get("font_size")
+            if fs:
+                run.font.size = fs
         return
 
     tag = node.name
 
+    # 合并父级传递的样式与当前标签的样式
+    kw = dict(styles)
     if tag in ("strong", "b"):
-        run = paragraph.add_run(node.get_text())
-        run.bold = True
+        kw["bold"] = True
     elif tag in ("em", "i"):
-        run = paragraph.add_run(node.get_text())
-        run.italic = True
+        kw["italic"] = True
     elif tag == "code":
-        run = paragraph.add_run(node.get_text())
-        run.font.name = "Consolas"
-        run.font.size = Pt(9.5)
+        kw["font_name"] = "Consolas"
+        kw["font_size"] = Pt(9.5)
     elif tag == "a":
-        run = paragraph.add_run(node.get_text())
-        run.underline = True
+        kw["underline"] = True
     else:
         for child in node.children:
-            _process_child_inline(child, paragraph)
+            _process_child_inline(child, paragraph, **kw)
+        return
+
+    for child in node.children:
+        _process_child_inline(child, paragraph, **kw)
+
+
+def _add_blockquote_paragraph(node, doc):
+    """将 blockquote 内的元素以斜体 + 左缩进写入文档，使其在视觉上可区分"""
+    p = doc.add_paragraph()
+    pf = p.paragraph_format
+    pf.left_indent = Pt(24)
+    for child in node.children:
+        _process_child_inline(child, p, italic=True)
 
 
 def validate_markdown(md_text: str) -> list[str]:

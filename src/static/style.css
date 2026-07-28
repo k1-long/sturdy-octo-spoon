@@ -1,156 +1,265 @@
-/* 全局样式 */
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
+/* ============================================================
+   Markdown → Word 转换器 — 样式
+   ============================================================ */
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
 
 body {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", sans-serif;
-    background: #f5f5f5;
-    color: #333;
-    line-height: 1.6;
+    background: #1a1a2e;
+    color: #e0e0e0;
     min-height: 100vh;
+    line-height: 1.6;
 }
 
 .container {
-    max-width: 700px;
+    max-width: 1100px;
     margin: 0 auto;
-    padding: 40px 20px;
+    padding: 32px 24px;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
 }
 
-/* 头部 */
+/* ── 头部 ── */
+
 header {
     text-align: center;
-    margin-bottom: 40px;
+    margin-bottom: 28px;
+    flex-shrink: 0;
 }
 
 header h1 {
-    font-size: 2rem;
-    color: #1a1a1a;
-    margin-bottom: 8px;
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: #e94560;
+    letter-spacing: 1px;
 }
 
 .subtitle {
-    color: #666;
-    font-size: 1rem;
+    color: #7878a0;
+    font-size: 0.9rem;
+    margin-top: 4px;
 }
 
-/* 区块 */
-section {
-    background: #fff;
-    border-radius: 12px;
-    padding: 24px;
-    margin-bottom: 20px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
-}
+/* ── 编辑区（双栏） ── */
 
-section h2 {
-    font-size: 1.1rem;
-    margin-bottom: 16px;
-    color: #444;
-}
-
-/* 文件上传区域 */
-.file-drop-area {
-    border: 2px dashed #ccc;
-    border-radius: 8px;
-    padding: 32px;
-    text-align: center;
-    transition: border-color 0.2s, background 0.2s;
+.editor-section {
+    flex: 1;
+    display: flex;
+    gap: 16px;
+    min-height: 0;
     margin-bottom: 16px;
 }
 
-.file-drop-area.dragover {
-    border-color: #4a90d9;
-    background: #f0f7ff;
-}
-
-.file-drop-area input[type="file"] {
-    display: none;
-}
-
-.file-label {
-    cursor: pointer;
+.editor-pane,
+.preview-pane {
+    flex: 1;
     display: flex;
     flex-direction: column;
-    align-items: center;
-    gap: 8px;
-    color: #666;
+    background: #16213e;
+    border-radius: 10px;
+    border: 1px solid #0f3460;
+    overflow: hidden;
 }
 
-.drop-icon {
-    font-size: 2rem;
-}
-
-.file-hint {
-    font-size: 0.85rem;
-    color: #999;
-}
-
-/* 分隔线 */
-.divider {
+.pane-header {
     display: flex;
     align-items: center;
-    text-align: center;
-    margin: 24px 0;
-    color: #999;
+    justify-content: space-between;
+    padding: 10px 16px;
+    background: #0f3460;
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #a0a0b0;
+    flex-shrink: 0;
 }
 
-.divider::before,
-.divider::after {
-    content: '';
+.editor-pane textarea {
     flex: 1;
-    border-bottom: 1px solid #e0e0e0;
-}
-
-.divider span {
-    padding: 0 16px;
-}
-
-/* 文本输入 */
-textarea {
-    width: 100%;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    padding: 12px;
-    font-family: "SF Mono", "Fira Code", "Consolas", monospace;
-    font-size: 0.95rem;
-    resize: vertical;
-    margin-bottom: 16px;
-}
-
-textarea:focus {
+    min-height: 300px;
+    padding: 16px;
+    border: none;
+    background: transparent;
+    color: #e0e0e0;
+    font-family: "JetBrains Mono", "Fira Code", "Consolas", monospace;
+    font-size: 0.88rem;
+    line-height: 1.7;
+    resize: none;
     outline: none;
-    border-color: #4a90d9;
-    box-shadow: 0 0 0 3px rgba(74, 144, 217, 0.1);
 }
 
-/* 按钮 */
+.editor-pane textarea::placeholder {
+    color: #505070;
+}
+
+/* ── 预览 ── */
+
+.preview-box {
+    flex: 1;
+    min-height: 300px;
+    padding: 16px;
+    overflow-y: auto;
+    font-size: 0.92rem;
+    line-height: 1.7;
+}
+
+.preview-box:empty::after {
+    content: "在左侧输入 Markdown，此处将实时渲染预览";
+    color: #505070;
+    font-style: italic;
+}
+
+/* ── 预览区富文本样式 ── */
+
+.preview-box h1 { font-size: 1.6rem; margin: 14px 0 6px; padding-bottom: 4px; border-bottom: 1px solid #0f3460; color: #e94560; }
+.preview-box h2 { font-size: 1.35rem; margin: 12px 0 5px; color: #e94560; }
+.preview-box h3 { font-size: 1.15rem; margin: 10px 0 4px; color: #e94560; }
+.preview-box h4, .preview-box h5, .preview-box h6 { margin: 8px 0 4px; color: #e94560; }
+.preview-box p { margin: 5px 0; }
+.preview-box a { color: #e94560; text-decoration: underline; }
+.preview-box strong { color: #fff; font-weight: 700; }
+.preview-box em { font-style: italic; color: #c0c0d0; }
+.preview-box code {
+    background: #0f3460; padding: 2px 6px; border-radius: 3px;
+    font-family: "JetBrains Mono", "Fira Code", "Consolas", monospace;
+    font-size: 0.84rem; color: #f0c0a0;
+}
+.preview-box pre {
+    background: #0a0a1a; border: 1px solid #0f3460; border-radius: 6px;
+    padding: 12px; overflow-x: auto; margin: 8px 0;
+}
+.preview-box pre code { background: none; padding: 0; font-size: 0.84rem; color: #c8d6e5; }
+.preview-box ul, .preview-box ol { margin: 5px 0; padding-left: 22px; }
+.preview-box li { margin: 2px 0; }
+.preview-box hr { border: none; border-top: 1px solid #0f3460; margin: 12px 0; }
+.preview-box blockquote {
+    border-left: 3px solid #e94560; padding-left: 12px; margin: 6px 0;
+    color: #a0a0b0; font-style: italic;
+}
+.preview-box img { max-width: 100%; border-radius: 4px; }
+.preview-box table { width: 100%; border-collapse: collapse; margin: 8px 0; font-size: 0.88rem; }
+.preview-box thead { background: #0f3460; }
+.preview-box th { padding: 6px 10px; text-align: left; font-weight: 700; border: 1px solid #1a3a6a; color: #e94560; }
+.preview-box td { padding: 6px 10px; border: 1px solid #0f3460; vertical-align: top; }
+.preview-box tbody tr:nth-child(even) { background: rgba(15, 52, 96, 0.3); }
+.preview-box tbody tr:hover { background: rgba(233, 69, 96, 0.1); }
+
+/* ── 操作栏 ── */
+
+.action-bar {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-shrink: 0;
+}
+
 .btn {
-    display: inline-block;
-    padding: 12px 24px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 32px;
     border: none;
     border-radius: 8px;
-    font-size: 1rem;
+    font-size: 0.95rem;
     cursor: pointer;
-    transition: background 0.2s;
+    transition: background 0.2s, transform 0.15s;
+    letter-spacing: 0.5px;
 }
 
 .btn-primary {
-    background: #4a90d9;
+    background: #e94560;
     color: #fff;
-    width: 100%;
 }
 
-.btn-primary:hover {
-    background: #3a7bc8;
+.btn-primary:hover:not(:disabled) { background: #d63850; transform: translateY(-1px); }
+.btn-primary:active:not(:disabled) { transform: translateY(0); }
+.btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.btn-import {
+    background: transparent;
+    border: 1px solid #0f3460;
+    color: #a0a0b0;
+    padding: 4px 12px;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: border-color 0.2s, color 0.2s;
 }
 
-/* 页脚 */
-footer {
-    text-align: center;
-    color: #999;
+.btn-import:hover {
+    border-color: #e94560;
+    color: #e94560;
+}
+
+/* ── 状态 ── */
+
+.status-msg {
     font-size: 0.85rem;
-    margin-top: 40px;
+    color: #7878a0;
+    flex: 1;
+}
+
+.status-msg.loading { color: #4a90d9; }
+.status-msg.success { color: #2ecc71; }
+.status-msg.error { color: #e94560; }
+
+/* ── 拖拽覆盖层 ── */
+
+.drop-overlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(26, 26, 46, 0.9);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s;
+}
+
+.drop-overlay.visible {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.drop-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    color: #e94560;
+    font-size: 1.2rem;
+}
+
+.drop-icon-large { font-size: 3rem; }
+
+/* ── 响应式 ── */
+
+@media (max-width: 768px) {
+    .editor-section {
+        flex-direction: column;
+    }
+
+    .editor-pane textarea,
+    .preview-box {
+        min-height: 200px;
+    }
+
+    .container {
+        padding: 16px 12px;
+    }
+
+    header h1 { font-size: 1.3rem; }
+
+    .action-bar {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .btn {
+        justify-content: center;
+    }
 }
