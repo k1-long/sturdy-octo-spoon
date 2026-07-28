@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Markdown 转富文本</title>
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/turndown/dist/turndown.js"></script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -103,6 +104,36 @@
       background: #2ecc71;
       pointer-events: none;
     }
+    .dir-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 10px 18px;
+      background: transparent;
+      color: #e94560;
+      border: 1px solid #e94560;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.15s;
+      letter-spacing: 0.5px;
+    }
+    .dir-btn:hover { background: rgba(233, 69, 96, 0.1); transform: translateY(-1px); }
+    .dir-btn:active { transform: translateY(0); }
+    .input-area .rich-input {
+      flex: 1;
+      min-height: 0;
+      padding: 14px;
+      border: 1px solid #0f3460;
+      border-radius: 8px;
+      background: #16213e;
+      color: #e0e0e0;
+      font-size: 0.95rem;
+      line-height: 1.7;
+      overflow-y: auto;
+      outline: none;
+    }
+    .input-area .rich-input:focus { border-color: #e94560; }
     .toast {
       position: fixed;
       top: 56px;
@@ -247,7 +278,7 @@
 
   <div class="container">
     <div class="input-area">
-      <label>Markdown 输入</label>
+      <label id="inputLabel">Markdown 输入</label>
       <textarea id="input" placeholder="在此粘贴或输入 Markdown 内容，下方将实时渲染…
 
 # 标题
@@ -258,9 +289,11 @@
 // 代码块
 console.log('hello');
 ​```"></textarea>
+      <div id="richInput" class="rich-input" contenteditable style="display:none"></div>
     </div>
 
     <div class="toolbar">
+      <button class="dir-btn" id="dirBtn">⇄ 切换方向</button>
       <button class="copy-btn" id="copyBtn">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
         复制富文本
@@ -268,16 +301,20 @@ console.log('hello');
     </div>
 
     <div class="preview-area">
-      <label>富文本预览</label>
+      <label id="previewLabel">富文本预览</label>
       <div class="preview-box" id="preview"></div>
     </div>
   </div>
 
   <script>
     const input = document.getElementById('input');
+    const richInput = document.getElementById('richInput');
     const preview = document.getElementById('preview');
     const copyBtn = document.getElementById('copyBtn');
+    const dirBtn = document.getElementById('dirBtn');
     const toast = document.getElementById('toast');
+    const inputLabel = document.getElementById('inputLabel');
+    const previewLabel = document.getElementById('previewLabel');
 
     /* ============ Markdown 解析器（使用 marked.js） ============ */
 
@@ -288,13 +325,45 @@ console.log('hello');
 
     /* ============ 实时渲染 ============ */
 
+    let isReverse = false;
+    const turndownService = new TurndownService({ headingStyle: 'atx', codeBlockStyle: 'fenced' });
+
     function render() {
-      const md = input.value;
-      preview.innerHTML = convert(md);
+      if (isReverse) {
+        const md = turndownService.turndown(richInput.innerHTML);
+        preview.innerHTML = '<pre><code>' + md.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</code></pre>';
+      } else {
+        preview.innerHTML = convert(input.value);
+      }
     }
 
     input.addEventListener('input', render);
+    richInput.addEventListener('input', render);
     render();
+
+    /* ============ 方向切换 ============ */
+
+    dirBtn.addEventListener('click', () => {
+      isReverse = !isReverse;
+      if (isReverse) {
+        // 切换到反向：左→富文本编辑，右→Markdown 源码
+        input.style.display = 'none';
+        richInput.innerHTML = marked.parse(input.value || '', { gfm: true });
+        richInput.style.display = 'block';
+        inputLabel.textContent = '富文本输入';
+        previewLabel.textContent = 'Markdown 源码';
+        dirBtn.textContent = '⇄ 切换至 Markdown → HTML';
+      } else {
+        // 切换回正向
+        richInput.style.display = 'none';
+        input.value = turndownService.turndown(richInput.innerHTML);
+        input.style.display = '';
+        inputLabel.textContent = 'Markdown 输入';
+        previewLabel.textContent = '富文本预览';
+        dirBtn.textContent = '⇄ 切换方向';
+      }
+      render();
+    });
 
     /* ============ 复制：清洗 HTML + 生成纯文本 ============ */
 
@@ -376,6 +445,23 @@ console.log('hello');
     /* ============ 复制富文本 ============ */
 
     copyBtn.addEventListener('click', async () => {
+      if (isReverse) {
+        // 反向模式：复制 Markdown 源码
+        const mdText = preview.textContent || '';
+        if (!mdText.trim()) return;
+        try {
+          await navigator.clipboard.writeText(mdText);
+          copyBtn.classList.add('copied');
+          copyBtn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> 已复制!';
+          showToast('Markdown 源码已复制');
+          setTimeout(() => {
+            copyBtn.classList.remove('copied');
+            copyBtn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> 复制';
+          }, 2000);
+        } catch { showToast('复制失败'); }
+        return;
+      }
+
       const rawHTML = preview.innerHTML;
       if (!rawHTML.trim()) return;
 
