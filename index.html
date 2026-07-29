@@ -3,306 +3,430 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Markdown 转富文本</title>
+  <title>Retro Converter · 像素转换机</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/turndown/dist/turndown.js"></script>
   <style>
+    :root {
+      --shell: #e0d8c8;
+      --shell-dark: #c8c0b0;
+      --shell-shadow: #a8a090;
+      --screen-bg: #0c0e1a;
+      --screen-glow: #00d4ff;
+      --btn-a: #ff2d55;
+      --btn-b: #5856d6;
+      --text-light: #e0e0e0;
+      --text-dim: #7878a0;
+      --pixel: 'Press Start 2P', 'Courier New', monospace;
+    }
+
     * { margin: 0; padding: 0; box-sizing: border-box; }
 
     body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-      background: #1a1a2e;
-      color: #e0e0e0;
-      height: 100vh;
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-    }
-
-    .header {
-      padding: 12px 24px;
-      background: #16213e;
-      border-bottom: 1px solid #0f3460;
-      text-align: center;
-      flex-shrink: 0;
-    }
-    .header h1 {
-      font-size: 1.2rem;
-      font-weight: 600;
-      color: #e94560;
-      letter-spacing: 1px;
-    }
-
-    .container {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      min-height: 0;
-    }
-
-    /* --- 输入区 --- */
-    .input-area {
-      flex: 0 0 45%;
-      display: flex;
-      flex-direction: column;
-      padding: 12px 20px 6px;
-      min-height: 0;
-    }
-    .input-area label {
-      font-size: 0.8rem;
-      color: #a0a0b0;
-      margin-bottom: 6px;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-    }
-    .input-area textarea {
-      flex: 1;
-      min-height: 0;
-      padding: 14px;
-      border: 1px solid #0f3460;
-      border-radius: 8px;
-      background: #16213e;
-      color: #e0e0e0;
-      font-family: "JetBrains Mono", "Fira Code", "Consolas", monospace;
-      font-size: 0.9rem;
-      line-height: 1.6;
-      resize: none;
-      outline: none;
-      transition: border-color 0.2s;
-    }
-    .input-area textarea:focus {
-      border-color: #e94560;
-    }
-    .input-area textarea::placeholder {
-      color: #505070;
-    }
-
-    /* --- 按钮区 --- */
-    .toolbar {
-      flex: 0 0 10%;
+      background: radial-gradient(ellipse at center, #1a0e2e, #0a0a12);
+      min-height: 100vh;
       display: flex;
       align-items: center;
       justify-content: center;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      padding: 16px;
     }
-    .copy-btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 10px 28px;
-      background: #e94560;
-      color: #fff;
-      border: none;
-      border-radius: 6px;
-      font-size: 0.95rem;
-      cursor: pointer;
-      transition: background 0.2s, transform 0.15s;
-      letter-spacing: 0.5px;
+
+    /* ===== 主机外壳 ===== */
+    .console {
+      max-width: 860px;
+      width: 100%;
+      background: linear-gradient(170deg, var(--shell), var(--shell-dark));
+      border-radius: 28px 28px 20px 20px;
+      padding: 20px 20px 16px;
+      box-shadow:
+        0 16px 48px rgba(0,0,0,0.6),
+        inset 0 1px 0 rgba(255,255,255,0.5),
+        0 0 30px rgba(0,212,255,0.08);
+      border: 2px solid var(--shell-shadow);
     }
-    .copy-btn:hover { background: #d63850; transform: translateY(-1px); }
-    .copy-btn:active { transform: translateY(0); }
-    .copy-btn.copied {
-      background: #2ecc71;
+
+    /* ===== 标题 ===== */
+    .header {
+      text-align: center;
+      margin-bottom: 14px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid var(--shell-shadow);
+    }
+    .header h1 {
+      font-family: var(--pixel);
+      font-size: 0.85rem;
+      color: #ff2d55;
+      text-shadow: 2px 2px 0 rgba(0,0,0,0.08);
+      letter-spacing: 2px;
+      line-height: 1.6;
+    }
+    .header .subtitle {
+      font-family: var(--pixel);
+      font-size: 0.45rem;
+      color: #888;
+      letter-spacing: 4px;
+      display: block;
+      margin-top: 6px;
+    }
+
+    /* ===== 主体容器 ===== */
+    .container {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    /* ===== 屏幕区域 ===== */
+    .screen-area {
+      background: var(--screen-bg);
+      border: 3px solid #3a3a4a;
+      border-radius: 12px;
+      padding: 8px;
+      position: relative;
+      box-shadow: inset 0 0 20px rgba(0,212,255,0.06), 0 2px 8px rgba(0,0,0,0.3);
+    }
+    .screen-label {
+      font-family: var(--pixel);
+      font-size: 0.4rem;
+      color: var(--screen-glow);
+      letter-spacing: 3px;
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      text-shadow: 0 0 8px rgba(0,212,255,0.4);
+    }
+
+    /* 扫描线 */
+    .screen-area::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 2px,
+        rgba(0,0,0,0.08) 2px,
+        rgba(0,0,0,0.08) 4px
+      );
+      pointer-events: none;
+      border-radius: 10px;
+    }
+    /* 屏幕发光边框 */
+    .screen-area::before {
+      content: '';
+      position: absolute;
+      inset: -1px;
+      border-radius: 13px;
+      border: 2px solid transparent;
+      background: linear-gradient(135deg, rgba(0,212,255,0.15), transparent, rgba(255,45,85,0.08)) border-box;
+      -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite: xor;
+      mask-composite: exclude;
       pointer-events: none;
     }
-    .dir-btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 10px 18px;
-      background: transparent;
-      color: #e94560;
-      border: 1px solid #e94560;
-      border-radius: 6px;
-      font-size: 0.85rem;
-      cursor: pointer;
-      transition: background 0.2s, transform 0.15s;
-      letter-spacing: 0.5px;
-    }
-    .dir-btn:hover { background: rgba(233, 69, 96, 0.1); transform: translateY(-1px); }
-    .dir-btn:active { transform: translateY(0); }
-    .input-area .rich-input {
-      flex: 1;
+
+    .input-area, .preview-area {
+      display: flex;
+      flex-direction: column;
       min-height: 0;
-      padding: 14px;
-      border: 1px solid #0f3460;
+    }
+
+    .input-area textarea {
+      width: 100%;
+      min-height: 180px;
+      padding: 12px;
+      border: none;
       border-radius: 8px;
-      background: #16213e;
-      color: #e0e0e0;
-      font-size: 0.95rem;
+      background: rgba(0,0,0,0.3);
+      color: #9bbc0f;
+      font-family: "Courier New", Consolas, monospace;
+      font-size: 0.85rem;
+      line-height: 1.6;
+      resize: vertical;
+      outline: none;
+    }
+    .input-area textarea:focus {
+      box-shadow: inset 0 0 12px rgba(0,212,255,0.1);
+    }
+    .input-area textarea::placeholder {
+      color: #3a4a3a;
+    }
+
+    .input-area .rich-input {
+      width: 100%;
+      min-height: 180px;
+      padding: 12px;
+      border: none;
+      border-radius: 8px;
+      background: rgba(0,0,0,0.3);
+      color: #9bbc0f;
+      font-size: 0.9rem;
       line-height: 1.7;
       overflow-y: auto;
       outline: none;
     }
-    .input-area .rich-input:focus { border-color: #e94560; }
-    .toast {
-      position: fixed;
-      top: 56px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: #2ecc71;
-      color: #fff;
-      padding: 8px 20px;
-      border-radius: 6px;
-      font-size: 0.85rem;
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.3s;
-      z-index: 100;
+    .input-area .rich-input:focus {
+      box-shadow: inset 0 0 12px rgba(0,212,255,0.1);
     }
-    .toast.show { opacity: 1; }
 
-    /* --- 预览区 --- */
-    .preview-area {
-      flex: 0 0 45%;
-      display: flex;
-      flex-direction: column;
-      padding: 6px 20px 12px;
-      min-height: 0;
-    }
-    .preview-area label {
-      font-size: 0.8rem;
-      color: #a0a0b0;
-      margin-bottom: 6px;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-    }
     .preview-box {
-      flex: 1;
-      min-height: 0;
-      padding: 14px;
-      border: 1px solid #0f3460;
+      width: 100%;
+      min-height: 180px;
+      padding: 12px;
+      border: none;
       border-radius: 8px;
-      background: #16213e;
+      background: rgba(0,0,0,0.3);
       overflow-y: auto;
       line-height: 1.7;
-      font-size: 0.95rem;
+      font-size: 0.9rem;
+      color: var(--text-light);
     }
     .preview-box:empty::after {
-      content: "在输入框中输入 Markdown，此处将实时渲染预览";
-      color: #505070;
+      content: '在输入框中输入 Markdown，此处将实时渲染预览';
+      color: #3a4a5a;
       font-style: italic;
     }
 
-    /* --- 富文本样式 --- */
-    .preview-box h1 { font-size: 1.8rem; margin: 16px 0 8px; padding-bottom: 6px; border-bottom: 1px solid #0f3460; color: #e94560; }
-    .preview-box h2 { font-size: 1.5rem; margin: 14px 0 6px; color: #e94560; }
-    .preview-box h3 { font-size: 1.25rem; margin: 12px 0 4px; color: #e94560; }
-    .preview-box h4, .preview-box h5, .preview-box h6 { margin: 10px 0 4px; color: #e94560; }
-
+    /* ===== 预览区富文本样式 ===== */
+    .preview-box h1 { font-size: 1.6rem; margin: 14px 0 8px; padding-bottom: 6px; border-bottom: 1px solid #2a3a5a; color: #00d4ff; }
+    .preview-box h2 { font-size: 1.3rem; margin: 12px 0 6px; color: #00d4ff; }
+    .preview-box h3 { font-size: 1.1rem; margin: 10px 0 4px; color: #00d4ff; }
+    .preview-box h4, .preview-box h5, .preview-box h6 { margin: 8px 0 4px; color: #00d4ff; }
     .preview-box p { margin: 6px 0; }
-
-    .preview-box a { color: #e94560; text-decoration: underline; }
-
+    .preview-box a { color: #ff2d55; text-decoration: underline; }
     .preview-box strong { color: #fff; font-weight: 700; }
-
     .preview-box em { font-style: italic; color: #c0c0d0; }
-
     .preview-box code {
-      background: #0f3460;
+      background: #1a1a2e;
       padding: 2px 6px;
       border-radius: 3px;
-      font-family: "JetBrains Mono", "Fira Code", "Consolas", monospace;
-      font-size: 0.85rem;
+      font-family: "Courier New", Consolas, monospace;
+      font-size: 0.8rem;
       color: #f0c0a0;
     }
-
     .preview-box pre {
-      background: #0a0a1a;
-      border: 1px solid #0f3460;
+      background: #08080e;
+      border: 1px solid #1a2a4a;
       border-radius: 6px;
       padding: 12px;
       overflow-x: auto;
       margin: 10px 0;
     }
-    .preview-box pre code {
-      background: none;
-      padding: 0;
-      font-size: 0.85rem;
-      color: #c8d6e5;
-    }
-
+    .preview-box pre code { background: none; padding: 0; font-size: 0.8rem; color: #c8d6e5; }
     .preview-box ul, .preview-box ol { margin: 6px 0; padding-left: 22px; }
     .preview-box li { margin: 2px 0; }
-
-    .preview-box hr { border: none; border-top: 1px solid #0f3460; margin: 14px 0; }
-
+    .preview-box hr { border: none; border-top: 1px solid #2a3a5a; margin: 12px 0; }
     .preview-box blockquote {
-      border-left: 3px solid #e94560;
+      border-left: 3px solid #00d4ff;
       padding-left: 12px;
       margin: 8px 0;
       color: #a0a0b0;
       font-style: italic;
     }
-
     .preview-box img { max-width: 100%; border-radius: 4px; }
-
     .preview-box table {
       width: 100%;
       border-collapse: collapse;
       margin: 10px 0;
-      font-size: 0.9rem;
+      font-size: 0.85rem;
     }
-    .preview-box thead { background: #0f3460; }
+    .preview-box thead { background: #1a1a2e; }
     .preview-box th {
-      padding: 8px 12px;
+      padding: 6px 10px;
       text-align: left;
       font-weight: 700;
-      border: 1px solid #1a3a6a;
-      color: #e94560;
+      border: 1px solid #1a2a4a;
+      color: #00d4ff;
     }
     .preview-box td {
-      padding: 8px 12px;
-      border: 1px solid #0f3460;
+      padding: 6px 10px;
+      border: 1px solid #1a1a2e;
       vertical-align: top;
     }
-    .preview-box tbody tr:nth-child(even) { background: rgba(15, 52, 96, 0.3); }
-    .preview-box tbody tr:hover { background: rgba(233, 69, 96, 0.1); }
+    .preview-box tbody tr:nth-child(even) { background: rgba(20,20,40,0.3); }
+    .preview-box tbody tr:hover { background: rgba(0,212,255,0.08); }
 
-    /* --- 响应式 --- */
-    @media (max-width: 768px) {
-      .input-area { padding: 8px 10px 4px; flex: 0 0 45%; }
-      .preview-area { padding: 4px 10px 8px; flex: 0 0 45%; }
-      .toolbar { flex: 0 0 10%; }
-      .copy-btn { padding: 8px 20px; font-size: 0.85rem; }
-      .header { padding: 8px 16px; }
-      .header h1 { font-size: 1rem; }
+    /* ===== 控制区（按钮） ===== */
+    .toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      padding: 8px 0;
+    }
+
+    .btn {
+      font-family: var(--pixel);
+      font-size: 0.45rem;
+      letter-spacing: 1px;
+      border: none;
+      border-radius: 50%;
+      cursor: pointer;
+      transition: transform 0.1s, box-shadow 0.1s;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      padding: 0;
+    }
+    .btn:active {
+      transform: translateY(2px);
+      box-shadow: none !important;
+    }
+
+    .dir-btn {
+      width: 48px;
+      height: 48px;
+      background: #555;
+      color: #fff;
+      font-size: 1.1rem;
+      box-shadow: 0 4px 0 #333, 0 6px 10px rgba(0,0,0,0.3);
+    }
+    .dir-btn:hover { background: #666; }
+
+    .copy-btn {
+      height: 48px;
+      padding: 0 20px;
+      border-radius: 24px;
+      background: var(--btn-a);
+      color: #fff;
+      box-shadow: 0 4px 0 #b81e3a, 0 6px 10px rgba(0,0,0,0.3);
+      font-size: 0.45rem;
+      border: none;
+      cursor: pointer;
+      font-family: var(--pixel);
+      letter-spacing: 1px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      transition: transform 0.1s, box-shadow 0.1s;
+    }
+    .copy-btn:hover { background: #ff3a5e; }
+    .copy-btn:active { transform: translateY(2px); box-shadow: none !important; }
+    .copy-btn.copied {
+      background: #34c759 !important;
+      box-shadow: 0 4px 0 #249d46, 0 6px 10px rgba(0,0,0,0.3) !important;
+      pointer-events: none;
+    }
+
+    .clear-btn {
+      width: 48px;
+      height: 48px;
+      background: #555;
+      color: #fff;
+      font-size: 1rem;
+      box-shadow: 0 4px 0 #333, 0 6px 10px rgba(0,0,0,0.3);
+      border: none;
+      border-radius: 50%;
+      cursor: pointer;
+      font-family: var(--pixel);
+      transition: transform 0.1s, box-shadow 0.1s;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .clear-btn:hover { background: #666; }
+    .clear-btn:active { transform: translateY(2px); box-shadow: none !important; }
+
+    .btn-icon {
+      width: 48px;
+      height: 48px;
+      background: #555;
+      color: #fff;
+      font-size: 1rem;
+      box-shadow: 0 4px 0 #333, 0 6px 10px rgba(0,0,0,0.3);
+      border: none;
+      border-radius: 50%;
+      cursor: pointer;
+      font-family: var(--pixel);
+      transition: transform 0.1s, box-shadow 0.1s;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .btn-icon:hover { background: #666; }
+    .btn-icon:active { transform: translateY(2px); box-shadow: none !important; }
+
+    /* ===== Toast ===== */
+    .toast {
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #34c759;
+      color: #fff;
+      font-family: var(--pixel);
+      font-size: 0.4rem;
+      padding: 10px 20px;
+      border-radius: 8px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s;
+      z-index: 100;
+      letter-spacing: 1px;
+      box-shadow: 0 4px 20px rgba(52,199,89,0.4);
+    }
+    .toast.show { opacity: 1; }
+
+    /* ===== 响应式 ===== */
+    @media (max-width: 640px) {
+      body { padding: 8px; }
+      .console { padding: 12px; border-radius: 20px; }
+      .header h1 { font-size: 0.65rem; }
+      .input-area textarea { min-height: 120px; font-size: 0.75rem; }
+      .preview-box { min-height: 120px; font-size: 0.8rem; }
+      .copy-btn { height: 40px; padding: 0 14px; font-size: 0.4rem; }
+      .dir-btn, .clear-btn, .btn-icon { width: 40px; height: 40px; font-size: 0.85rem; }
+      .toolbar { gap: 6px; }
     }
   </style>
 </head>
 <body>
-  <div class="header">
-    <h1>Markdown → 富文本</h1>
-  </div>
+  <div class="console">
+    <div class="header">
+      <h1>RETRO CONVERTER</h1>
+      <span class="subtitle">像素转换机</span>
+    </div>
 
-  <div class="toast" id="toast"></div>
+    <div class="toast" id="toast"></div>
 
-  <div class="container">
-    <div class="input-area">
-      <label id="inputLabel">Markdown 输入</label>
-      <textarea id="input" placeholder="在此粘贴或输入 Markdown 内容，下方将实时渲染…
+    <div class="container">
+      <div class="screen-area">
+        <div class="screen-label" id="inputLabel">MD INPUT</div>
+        <div class="input-area">
+          <textarea id="input" placeholder="在此粘贴或输入 Markdown 内容…
 
 # 标题
 **粗体** *斜体* ~~删除线~~
 [链接](https://example.com)
 - 列表项
-​```js
+```js
 // 代码块
 console.log('hello');
-​```"></textarea>
-      <div id="richInput" class="rich-input" contenteditable style="display:none"></div>
-    </div>
+```"></textarea>
+          <div id="richInput" class="rich-input" contenteditable style="display:none"></div>
+        </div>
+      </div>
 
-    <div class="toolbar">
-      <button class="dir-btn" id="dirBtn">⇄ 切换方向</button>
-      <button class="copy-btn" id="copyBtn">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-        复制富文本
-      </button>
-    </div>
+      <div class="toolbar">
+        <button class="dir-btn" id="dirBtn">⇄</button>
+        <button class="copy-btn" id="copyBtn">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+          复制
+        </button>
+        <button class="clear-btn" id="clearBtn">✕</button>
+      </div>
 
-    <div class="preview-area">
-      <label id="previewLabel">富文本预览</label>
-      <div class="preview-box" id="preview"></div>
+      <div class="screen-area">
+        <div class="screen-label" id="previewLabel">PREVIEW</div>
+        <div class="preview-area">
+          <div class="preview-box" id="preview"></div>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -311,6 +435,7 @@ console.log('hello');
     const richInput = document.getElementById('richInput');
     const preview = document.getElementById('preview');
     const copyBtn = document.getElementById('copyBtn');
+    const clearBtn = document.getElementById('clearBtn');
     const dirBtn = document.getElementById('dirBtn');
     const toast = document.getElementById('toast');
     const inputLabel = document.getElementById('inputLabel');
@@ -346,23 +471,37 @@ console.log('hello');
     dirBtn.addEventListener('click', () => {
       isReverse = !isReverse;
       if (isReverse) {
-        // 切换到反向：左→富文本编辑，右→Markdown 源码
         input.style.display = 'none';
         richInput.innerHTML = marked.parse(input.value || '', { gfm: true });
         richInput.style.display = 'block';
-        inputLabel.textContent = '富文本输入';
-        previewLabel.textContent = 'Markdown 源码';
-        dirBtn.textContent = '⇄ 切换至 Markdown → HTML';
+        inputLabel.textContent = 'RICH INPUT';
+        previewLabel.textContent = 'MD SOURCE';
+        dirBtn.textContent = 'MD';
       } else {
-        // 切换回正向
         richInput.style.display = 'none';
         input.value = turndownService.turndown(richInput.innerHTML);
         input.style.display = '';
-        inputLabel.textContent = 'Markdown 输入';
-        previewLabel.textContent = '富文本预览';
-        dirBtn.textContent = '⇄ 切换方向';
+        inputLabel.textContent = 'MD INPUT';
+        previewLabel.textContent = 'PREVIEW';
+        dirBtn.textContent = '⇄';
       }
       render();
+    });
+
+    /* ============ 清屏 ============ */
+
+    clearBtn.addEventListener('click', () => {
+      input.value = '';
+      richInput.innerHTML = '';
+      preview.innerHTML = '';
+      inputLabel.textContent = 'MD INPUT';
+      previewLabel.textContent = 'PREVIEW';
+      if (isReverse) {
+        isReverse = false;
+        richInput.style.display = 'none';
+        input.style.display = '';
+        dirBtn.textContent = '⇄';
+      }
     });
 
     /* ============ 复制：清洗 HTML + 生成纯文本 ============ */
@@ -371,7 +510,6 @@ console.log('hello');
       const div = document.createElement('div');
       div.innerHTML = html;
 
-      // 表格：仅保留结构样式，不加任何背景色
       div.querySelectorAll('table').forEach(table => {
         table.setAttribute('border', '1');
         table.setAttribute('cellspacing', '0');
@@ -392,7 +530,6 @@ console.log('hello');
         td.style.verticalAlign = 'top';
       });
 
-      // 代码块：只保留等宽字体
       div.querySelectorAll('code, pre').forEach(el => {
         el.style.fontFamily = 'Consolas, "Courier New", monospace';
       });
@@ -404,7 +541,6 @@ console.log('hello');
       const div = document.createElement('div');
       div.innerHTML = html;
 
-      // 表格 → tab 分隔
       div.querySelectorAll('table').forEach(table => {
         const lines = [];
         table.querySelectorAll('tr').forEach((row, ri) => {
@@ -418,25 +554,20 @@ console.log('hello');
         table.replaceWith(textNode);
       });
 
-      // 有序列表 → 编号
       div.querySelectorAll('ol').forEach(ol => {
         ol.querySelectorAll(':scope > li').forEach((li, i) => {
           li.prepend(`${i + 1}. `);
         });
       });
-      // 无序列表 → 圆点
       div.querySelectorAll('ul > li').forEach(li => {
         li.prepend('• ');
       });
 
-      // 块级元素后加换行，保证纯文本不会粘成一片
       div.querySelectorAll('p, h1, h2, h3, h4, h5, h6, li, pre, blockquote, ul, ol').forEach(el => {
         el.append('\n');
       });
 
       let text = div.textContent || '';
-
-      // 清理多余空行与行尾空白
       text = text.replace(/[ \t]+\n/g, '\n');
       text = text.replace(/\n{3,}/g, '\n\n');
       return text.trim();
@@ -446,17 +577,16 @@ console.log('hello');
 
     copyBtn.addEventListener('click', async () => {
       if (isReverse) {
-        // 反向模式：复制 Markdown 源码
         const mdText = preview.textContent || '';
         if (!mdText.trim()) return;
         try {
           await navigator.clipboard.writeText(mdText);
           copyBtn.classList.add('copied');
-          copyBtn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> 已复制!';
+          copyBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> OK!';
           showToast('Markdown 源码已复制');
           setTimeout(() => {
             copyBtn.classList.remove('copied');
-            copyBtn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> 复制';
+            copyBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> 复制';
           }, 2000);
         } catch { showToast('复制失败'); }
         return;
@@ -476,18 +606,12 @@ console.log('hello');
         await navigator.clipboard.write([item]);
 
         copyBtn.classList.add('copied');
-        copyBtn.innerHTML = `
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-          已复制!
-        `;
+        copyBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> OK!';
         showToast('富文本已复制到剪贴板');
 
         setTimeout(() => {
           copyBtn.classList.remove('copied');
-          copyBtn.innerHTML = `
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-            复制富文本
-          `;
+          copyBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> 复制';
         }, 2000);
       } catch {
         try {
