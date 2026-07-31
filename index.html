@@ -16,8 +16,8 @@
       --shell-shadow: #9a8a6e;
       --screen-bg: #0d0d12;
       --screen-glow: #ffcc00;
-      --btn-a: #e60012;
-      --btn-a-shadow: #9e0a12;
+      --btn-a: #c40012;
+      --btn-a-shadow: #8f0910;
       --btn-gold: #ffcc00;
       --btn-gold-shadow: #b8920a;
       --text-light: #e8e8e8;
@@ -69,8 +69,8 @@
     }
     .header .subtitle {
       font-family: var(--pixel);
-      font-size: 0.45rem;
-      color: #b8920a;
+      font-size: 0.6rem;
+      color: #7a5a00;
       letter-spacing: 4px;
       display: block;
       margin-top: 6px;
@@ -107,7 +107,7 @@
     }
     .screen-label {
       font-family: var(--pixel);
-      font-size: 0.4rem;
+      font-size: 0.5rem;
       color: var(--screen-glow);
       letter-spacing: 3px;
       margin-bottom: 6px;
@@ -159,7 +159,7 @@
       background: rgba(0,0,0,0.3);
       color: #f0ead8;
       font-family: "Courier New", Consolas, monospace;
-      font-size: 0.85rem;
+      font-size: 0.9rem;
       line-height: 1.6;
       resize: vertical;
       outline: none;
@@ -168,7 +168,7 @@
       box-shadow: inset 0 0 12px rgba(255,204,0,0.12);
     }
     .input-area textarea::placeholder {
-      color: #4a4a5a;
+      color: #7a7a8a;
     }
 
     .input-area .rich-input {
@@ -179,7 +179,7 @@
       border-radius: 8px;
       background: rgba(0,0,0,0.3);
       color: #f0ead8;
-      font-size: 0.9rem;
+      font-size: 0.95rem;
       line-height: 1.7;
       overflow-y: auto;
       outline: none;
@@ -202,7 +202,7 @@
     }
     .preview-box:empty::after {
       content: '在输入框中输入 Markdown，此处将实时渲染预览';
-      color: #3a4a5a;
+      color: #7a8a9a;
       font-style: italic;
     }
 
@@ -388,6 +388,30 @@
     }
     .toast.show { opacity: 1; }
 
+    /* ===== 焦点环 ===== */
+    .btn:focus-visible,
+    .copy-btn:focus-visible,
+    .clear-btn:focus-visible,
+    .dir-btn:focus-visible,
+    .btn-icon:focus-visible {
+      outline: 3px solid #1a1a1a;
+      outline-offset: 2px;
+    }
+    textarea:focus-visible,
+    .rich-input:focus-visible {
+      outline: 3px solid var(--screen-glow);
+      outline-offset: 2px;
+    }
+
+    /* ===== 减少动效 ===== */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        transition-duration: 0.01ms !important;
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+      }
+    }
+
     /* ===== 计分板 ===== */
     .stats-bar {
       display: flex;
@@ -408,12 +432,12 @@
       gap: 2px;
     }
     .stat-label {
-      font-size: 0.35rem;
+      font-size: 0.42rem;
       color: var(--text-dim);
       letter-spacing: 2px;
     }
     .stat-value {
-      font-size: 0.6rem;
+      font-size: 0.7rem;
       color: #ffcc00;
       text-shadow: 0 0 6px rgba(255,204,0,0.4);
     }
@@ -425,8 +449,8 @@
       .header h1 { font-size: 0.65rem; }
       .input-area textarea { min-height: 120px; font-size: 0.75rem; }
       .preview-box { min-height: 120px; font-size: 0.8rem; }
-      .copy-btn { height: 40px; padding: 0 14px; font-size: 0.4rem; }
-      .dir-btn, .clear-btn, .btn-icon { width: 40px; height: 40px; font-size: 0.85rem; }
+      .copy-btn { height: 44px; padding: 0 14px; font-size: 0.4rem; }
+      .dir-btn, .clear-btn, .btn-icon { width: 44px; height: 44px; font-size: 0.85rem; }
       .toolbar { gap: 6px; }
     }
   </style>
@@ -439,13 +463,13 @@
       <span class="subtitle">红白机 · 像素转换机</span>
     </div>
 
-    <div class="toast" id="toast"></div>
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
     <div class="container">
       <div class="screen-area">
         <div class="screen-label" id="inputLabel">MD INPUT</div>
         <div class="input-area">
-          <textarea id="input" placeholder="在此粘贴或输入 Markdown 内容…
+          <textarea id="input" aria-labelledby="inputLabel" placeholder="在此粘贴或输入 Markdown 内容…
 
 # 标题
 **粗体** *斜体* ~~删除线~~
@@ -455,17 +479,17 @@
 // 代码块
 console.log('hello');
 ```"></textarea>
-          <div id="richInput" class="rich-input" contenteditable style="display:none"></div>
+          <div id="richInput" class="rich-input" contenteditable role="textbox" aria-multiline="true" aria-labelledby="inputLabel" style="display:none"></div>
         </div>
       </div>
 
       <div class="toolbar">
-        <button class="dir-btn" id="dirBtn">⇄</button>
+        <button class="dir-btn" id="dirBtn" aria-label="切换输入方向">⇄</button>
         <button class="copy-btn" id="copyBtn">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
           复制
         </button>
-        <button class="clear-btn" id="clearBtn">✕</button>
+        <button class="clear-btn" id="clearBtn" aria-label="清空">✕</button>
       </div>
 
       <div class="screen-area">
