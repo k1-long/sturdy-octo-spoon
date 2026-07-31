@@ -9,7 +9,8 @@ Markdown → 富文本转换器。纯前端单 HTML 文件，无第三方依赖�
 ## 技术架构
 
 - `index.html` — 全部代码（HTML + CSS + JavaScript），约 630 行
-- Markdown 解析：自实现，非 marked.js 等第三方库
+- Markdown 解析：marked.js（CDN），非自实现
+- HTML → Markdown：turndown.js（CDN）
 - 渲染模式：实时输入 → 预览，无后端
 - 复制的板：原生 Clipboard API（`ClipboardItem`），同时写入 `text/html` 和 `text/plain`
 
