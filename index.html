@@ -60,7 +60,7 @@
     .header .badge {
       display: inline-block;
       font-family: var(--pixel);
-      font-size: 0.6rem;
+      font-size: 0.6rem; /* FC 徽章 */
       color: #fff;
       background: var(--btn-red);
       border-radius: 6px;
@@ -71,14 +71,14 @@
     }
     .header h1 {
       font-family: var(--pixel);
-      font-size: 0.95rem;
+      font-size: 1.25rem; /* 顶部大标题 */
       color: var(--text-dark);
       letter-spacing: 2px;
       line-height: 1.5;
     }
     .header .subtitle {
       font-family: var(--pixel);
-      font-size: 0.65rem;
+      font-size: 1rem; /* 标题下副标题 */
       color: var(--text-dim);
       letter-spacing: 3px;
       display: block;
@@ -93,7 +93,7 @@
       transform: translateX(-50%);
       background: #202226;
       color: #fff;
-      font-size: 0.9rem;
+      font-size: 0.9rem; /* 提示条文字 */
       padding: 10px 20px;
       border-radius: 10px;
       opacity: 0;
@@ -123,13 +123,13 @@
     }
     .screen-title {
       font-family: var(--pixel);
-      font-size: 0.55rem;
+      font-size: 0.55rem; /* 屏幕顶部 FORMAT 标签 */
       color: #8a8f98;
       letter-spacing: 2px;
     }
     #formatLabel {
       font-family: var(--pixel);
-      font-size: 0.55rem;
+      font-size: 0.55rem; /* 当前格式显示 */
       color: var(--accent);
       letter-spacing: 1px;
     }
@@ -149,7 +149,7 @@
     }
     .pane-label {
       font-family: var(--pixel);
-      font-size: 0.55rem;
+      font-size: 0.55rem; /* 面板标签(MD INPUT/PREVIEW) */
       color: #8a8f98;
       letter-spacing: 2px;
       margin-bottom: 6px;
@@ -165,7 +165,7 @@
       background: var(--pane-bg);
       color: var(--text-on-dark);
       padding: 12px 14px;
-      font-size: 1rem;
+      font-size: 1rem; /* 输入框 / 预览区正文 */
       line-height: 1.6;
       outline: none;
       overflow-y: auto;
@@ -188,26 +188,26 @@
       content: '等待输入，此处实时显示转换结果';
       color: #5a5e66;
       font-style: italic;
-      font-size: 0.9rem;
+      font-size: 0.9rem; /* 空态提示文字 */
     }
     .preview-box h1, .preview-box h2, .preview-box h3 { color: #fff; }
-    .preview-box h1 { font-size: 1.6rem; margin: 14px 0 8px; padding-bottom: 6px; border-bottom: 1px solid #2c2f35; }
-    .preview-box h2 { font-size: 1.35rem; margin: 12px 0 6px; }
-    .preview-box h3 { font-size: 1.15rem; margin: 10px 0 4px; }
+    .preview-box h1 { font-size: 1.6rem; /* 预览大标题 */ margin: 14px 0 8px; padding-bottom: 6px; border-bottom: 1px solid #2c2f35; }
+    .preview-box h2 { font-size: 1.35rem; /* 预览次级标题 */ margin: 12px 0 6px; }
+    .preview-box h3 { font-size: 1.15rem; /* 预览小标题 */ margin: 10px 0 4px; }
     .preview-box h4, .preview-box h5, .preview-box h6 { margin: 8px 0 4px; color: #cfd3d9; }
     .preview-box p { margin: 6px 0; }
     .preview-box a { color: var(--accent); text-decoration: underline; }
     .preview-box strong { color: #fff; font-weight: 700; }
     .preview-box em { font-style: italic; color: #c8ccd2; }
-    .preview-box code { background: #2a2c31; padding: 2px 6px; border-radius: 4px; font-family: "Courier New", Consolas, monospace; font-size: 0.85em; color: #e8a55a; }
+    .preview-box code { background: #2a2c31; padding: 2px 6px; border-radius: 4px; font-family: "Courier New", Consolas, monospace; font-size: 0.85em; /* 行内代码(相对正文) */ color: #e8a55a; }
     .preview-box pre { background: #0b0c0e; border: 1px solid #2c2f35; border-radius: 8px; padding: 12px; overflow-x: auto; margin: 10px 0; }
-    .preview-box pre code { background: none; padding: 0; font-size: 0.85em; color: #d0d4da; }
+    .preview-box pre code { background: none; padding: 0; font-size: 0.85em; /* 代码块(相对正文) */ color: #d0d4da; }
     .preview-box ul, .preview-box ol { margin: 6px 0; padding-left: 22px; }
     .preview-box li { margin: 2px 0; }
     .preview-box blockquote { border-left: 3px solid var(--accent); padding-left: 12px; margin: 8px 0; color: #b6bac2; }
     .preview-box hr { border: none; border-top: 1px solid #33363c; margin: 12px 0; }
     .preview-box img { max-width: 100%; border-radius: 4px; }
-    .preview-box table { width: 100%; border-collapse: collapse; margin: 10px 0; font-size: 0.9em; }
+    .preview-box table { width: 100%; border-collapse: collapse; margin: 10px 0; font-size: 0.9em; /* 表格文字(相对正文) */ }
     .preview-box th { border: 1px solid #33363c; padding: 6px 10px; text-align: left; color: #fff; }
     .preview-box td { border: 1px solid #33363c; padding: 6px 10px; }
     .preview-box tbody tr:nth-child(even) { background: rgba(255, 255, 255, 0.04); }
@@ -243,7 +243,7 @@
       background: linear-gradient(180deg, #3a3a3a, #2d2d2d 55%, #252525);
       border-radius: 6px;
       color: #666;
-      font-size: 16px;
+      font-size: 20px; /* 十字键箭头 ↑↓←→ */
       font-family: var(--pixel);
       display: flex;
       align-items: center;
@@ -315,7 +315,7 @@
         0 10px 16px rgba(0, 0, 0, 0.28);
       color: #fff;
       font-family: var(--pixel);
-      font-size: 14px;
+      font-size: 14px; /* 红键字母 A/B/X/Y */
       display: flex;
       align-items: center;
       justify-content: center;
@@ -376,7 +376,7 @@
     .fkey:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
     .fkey-label {
       font-family: var(--pixel);
-      font-size: 0.55rem;
+      font-size: 1rem; /* 功能键标签(格式切换/历史记录/设置) */
       color: var(--text-dim);
       letter-spacing: 1px;
     }
@@ -406,12 +406,12 @@
       padding: 8px 10px;
       border-radius: 8px;
       cursor: pointer;
-      font-size: 0.85rem;
+      font-size: 0.85rem; /* 历史记录条目文字 */
     }
     .hist-item:hover { background: #2e3036; }
     .hist-summary { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    .hist-type { font-size: 0.7rem; color: var(--accent); }
-    .hist-empty { color: #8a8f98; font-size: 0.85rem; padding: 8px 10px; }
+    .hist-type { font-size: 0.7rem; /* 历史类型标签 */ color: var(--accent); }
+    .hist-empty { color: #8a8f98; font-size: 0.85rem; /* 历史空态文字 */ padding: 8px 10px; }
 
     /* ============ 底部统计条 ============ */
     .stats-bar {
@@ -423,8 +423,8 @@
       margin-top: 8px;
     }
     .stat-item { display: flex; align-items: center; gap: 6px; font-family: var(--pixel); }
-    .stat-label { font-size: 0.5rem; color: var(--text-dim); letter-spacing: 1px; }
-    .stat-value { font-size: 0.8rem; color: #a57a2a; }
+    .stat-label { font-size: 0.8rem; /* 统计标签 */ color: var(--text-dim); letter-spacing: 1px; }
+    .stat-value { font-size: 1rem; /* 统计数字 */ color: #a57a2a; }
 
     /* ============ 深色滚动条 ============ */
     ::-webkit-scrollbar { width: 10px; height: 10px; }
@@ -446,7 +446,7 @@
       .console { padding: 14px 12px 12px; border-radius: 24px; }
       .screen { height: clamp(220px, 52vh, 420px); }
       .screen-body { flex-direction: column; }
-      textarea, .rich-input, .preview-box { font-size: 0.9rem; }
+      textarea, .rich-input, .preview-box { font-size: 0.9rem; } /* 手机端：正文 */
       .gamepad { padding-top: 14px; }
       .dpad, .abxy { width: 120px; height: 120px; }
       .dkey.up, .dkey.down { width: 38px; height: 42px; }
