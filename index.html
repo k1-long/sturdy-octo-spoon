@@ -85,6 +85,95 @@
       margin-top: 6px;
     }
 
+    /* ---------- Claude 小宠物 ---------- */
+    .claude-pet {
+      position: relative;
+      width: 90px;
+      height: 60px;
+      margin: 8px auto 0;
+      cursor: pointer;
+      user-select: none;
+    }
+    /* 来回滑动的载体（沿轨道左右移动） */
+    .pet-slide {
+      position: absolute;
+      bottom: 2px;
+      left: 50%;
+      width: 54px;
+      margin-left: -27px;
+      animation: petSlide 4.5s ease-in-out infinite;
+    }
+    /* 轨道线 */
+    .pet-line {
+      position: absolute;
+      bottom: 1px;
+      left: 4px;
+      right: 4px;
+      height: 3px;
+      border-radius: 2px;
+      background: rgba(232, 137, 58, 0.5);
+    }
+    .pet-star {
+      display: block;
+      width: 54px;
+      height: 54px;
+      animation: petBounce 0.9s ease-in-out infinite;
+    }
+    .pet-pupil {
+      animation: petBlink 4.5s infinite;
+      transform-box: fill-box;
+      transform-origin: center;
+    }
+    @keyframes petSlide {
+      0%, 100% { transform: translateX(-16px); }
+      50% { transform: translateX(16px); }
+    }
+    @keyframes petBounce {
+      0%, 100% { transform: translateY(0); }
+      45% { transform: translateY(-6px); }
+      55% { transform: translateY(-6px); }
+      72% { transform: translateY(-1px); }
+    }
+    @keyframes petBlink {
+      0%, 90%, 100% { transform: scaleY(1); }
+      94% { transform: scaleY(0.1); }
+    }
+    .claude-pet.poked .pet-star { animation: petJump 0.5s ease; }
+    @keyframes petJump {
+      0% { transform: translateY(0); }
+      30% { transform: translateY(-14px) rotate(-10deg); }
+      60% { transform: translateY(0) rotate(8deg); }
+      100% { transform: translateY(0) rotate(0deg); }
+    }
+    .pet-bubble {
+      position: absolute;
+      bottom: calc(100% + 10px);
+      left: 50%;
+      transform: translateX(-50%);
+      background: #202226;
+      color: #fff;
+      font-size: 0.72rem;
+      line-height: 1.4;
+      padding: 6px 10px;
+      border-radius: 10px;
+      white-space: nowrap;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s;
+      z-index: 150;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+    }
+    .pet-bubble::after {
+      content: '';
+      position: absolute;
+      top: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      border: 6px solid transparent;
+      border-top-color: #202226;
+    }
+    .pet-bubble.show { opacity: 1; }
+
     /* ============ 提示条 ============ */
     .toast {
       position: fixed;
@@ -460,6 +549,32 @@
       <span class="badge">FC</span>
       <h1>RETRO CONVERTER</h1>
       <span class="subtitle">像素转换机</span>
+
+      <!-- Claude 小宠物（星芒 + 气泡吐槽，沿轨道来回滑动） -->
+      <div class="claude-pet" id="claudePet" title="点我">
+        <div class="pet-slide">
+          <div class="pet-bubble" id="petBubble" role="status"></div>
+          <svg class="pet-star" viewBox="0 0 1024 1024" aria-hidden="true">
+            <defs>
+              <radialGradient id="petGrad" cx="35%" cy="30%" r="90%">
+                <stop offset="0%" stop-color="#f7a55c"/>
+                <stop offset="55%" stop-color="#ee8a3c"/>
+                <stop offset="100%" stop-color="#c96822"/>
+              </radialGradient>
+            </defs>
+            <path d="M174.2 156.2h54.1V436h-54.1zM752.688 269.016v54.1h-490.8v-54.1z" fill="url(#petGrad)"/>
+            <path d="M228.3 212.2h54.1V380h-54.1z m-55 558.4h56v56h-56z m-109.1-56h56v56h-56z m0-110.7h56v56h-56z m0-112h56v56h-56z m558.2 0h56v56h-56z m0 112h56v56h-56z m-55.9-56h56v56h-56z m111.9 0h56v56h-56z m-393-0.6h167.7v56H285.4z" fill="url(#petGrad)"/>
+            <path d="M397.193 491.455v167.7h-56v-167.7zM229.3 827.6h112.2v56H229.3zM120.2 380h54.1v390.6h-54.1zM847.73 436.004h-54.1v-279.8h54.1zM793.58 379.96h-54.1v-167.8h54.1zM848.63 826.472h-56v-56h56zM957.71 770.56h-56v-56h56zM957.71 659.77h-56v-56h56zM957.71 547.858h-56v-56h56zM792.672 883.532h-112.2v-56h112.2z" fill="url(#petGrad)"/>
+            <path d="M901.78 770.548h-54.1v-390.6h54.1z" fill="url(#petGrad)"/>
+            <!-- 眼睛 -->
+            <circle cx="482" cy="496" r="14" fill="#fff"/>
+            <circle cx="524" cy="496" r="14" fill="#fff"/>
+            <circle class="pet-pupil" cx="485" cy="498" r="6" fill="#3d2013"/>
+            <circle class="pet-pupil" cx="527" cy="498" r="6" fill="#3d2013"/>
+          </svg>
+        </div>
+        <div class="pet-line"></div>
+      </div>
     </header>
 
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
@@ -768,6 +883,36 @@
     /* 所有掌机按键按下统一发出"咔哒"声 */
     document.querySelector('.gamepad').addEventListener('click', () => SFX.click());
 
+    /* ============ Claude 小宠物（气泡吐槽） ============ */
+    const pet = document.getElementById('claudePet');
+    const petBubble = document.getElementById('petBubble');
+    let petTimer = null;
+    const PET = {
+      idle:   ['看我干嘛，去写 Markdown 啊', '这页可真米白…', '再不动我就打盹了', '星芒也会累的', '盯——你码到哪了'],
+      copy:   ['复制成功！快粘到 Word 去', '一手好活', '挺熟练啊', '学会了，下次我来'],
+      clear:  ['清空，重新开始，真干脆', '字没了，有点空虚', '归零……'],
+      switch: ['翻来翻去，累死星芒了', 'MD→HTML→MD，绕呢', '行吧，听你的'],
+      poke:   ['哎哟！轻点戳', '你戳我干嘛', '这星芒是碳基的，会疼', '再戳我可要生气了'],
+    };
+    function pickOne(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+    function petSay(text, hold) {
+      petBubble.textContent = text;
+      petBubble.classList.add('show');
+      clearTimeout(petTimer);
+      petTimer = setTimeout(() => petBubble.classList.remove('show'), hold || 2600);
+    }
+    /* 闲置吐槽：每 22 秒，若气泡没在显示就随机说一句 */
+    setInterval(() => {
+      if (!petBubble.classList.contains('show')) petSay(pickOne(PET.idle), 2400);
+    }, 22000);
+    /* 点击：弹跳 + 吐槽 */
+    pet.addEventListener('click', () => {
+      pet.classList.remove('poked');
+      void pet.offsetWidth;
+      pet.classList.add('poked');
+      petSay(pickOne(PET.poke), 2000);
+    });
+
     /* ============ 掌机按键绑定 ============ */
     document.getElementById('aKey').addEventListener('click', () => { saveHistory(); copyOutput(); });
     document.getElementById('bKey').addEventListener('click', clearAll);
@@ -781,6 +926,7 @@
       applyFormat(currentFormat === 'md2html' ? 'html2md' : 'md2html');
       SFX.switch();
       showToast('已切换：' + FORMATS[currentFormat].label);
+      petSay(pickOne(PET.switch));
     });
     document.getElementById('histKey').addEventListener('click', (e) => { e.stopPropagation(); toggleHistory(); });
     document.getElementById('settingsKey').addEventListener('click', () => {
@@ -798,6 +944,7 @@
       updateStats();
       SFX.clear();
       showToast('已清空');
+      petSay(pickOne(PET.clear));
     }
 
     /* ============ 拖拽文件（.md / .txt / .html） ============ */
@@ -868,7 +1015,7 @@
       if (!rawHTML.trim()) { showError('没有可复制的内容'); return; }
       if (currentFormat === 'html2md') {
         const md = preview.textContent || '';
-        try { await navigator.clipboard.writeText(md); SFX.copy(); showToast('Markdown 源码已复制'); }
+        try { await navigator.clipboard.writeText(md); SFX.copy(); petSay(pickOne(PET.copy)); showToast('Markdown 源码已复制'); }
         catch { showError('复制失败'); }
         return;
       }
@@ -881,9 +1028,10 @@
         });
         await navigator.clipboard.write([item]);
         SFX.copy();
+        petSay(pickOne(PET.copy));
         showToast('富文本已复制到剪贴板');
       } catch {
-        try { await navigator.clipboard.writeText(plainText); SFX.copy(); showToast('已复制纯文本（含表格对齐）'); }
+        try { await navigator.clipboard.writeText(plainText); SFX.copy(); petSay(pickOne(PET.copy)); showToast('已复制纯文本（含表格对齐）'); }
         catch { showError('复制失败，请手动选择预览区'); }
       }
     }
