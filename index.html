@@ -224,69 +224,40 @@
       padding: 18px 6px 6px;
     }
 
-    /* ---------- 十字键 D-Pad（嵌在凹槽基座中） ---------- */
+    /* ---------- 十字键 D-Pad（一体化 SVG 弧面十字 + 四个透明按压区） ---------- */
     .dpad {
       position: relative;
       width: 152px;
       height: 152px;
       flex-shrink: 0;
-      border-radius: 24px;
-      background: rgba(140, 118, 84, 0.06);
-      box-shadow:
-        inset 0 3px 8px rgba(90, 70, 40, 0.16),
-        inset 0 -2px 4px rgba(255, 255, 255, 0.55);
+      filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.35)); /* 十字整体立体投影 */
     }
-    .dkey {
+    .dpad-face {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+    }
+    /* 三层：凹槽 well / 侧壁厚 thick / 顶面 face */
+    .faceG, .thickG { transition: transform 0.06s; }
+    .wellG { transform-origin: 60px 60px; }
+    .thickG { transform: translate(1px, 3px); }
+    .dpad-arm {
       position: absolute;
       border: none;
+      background: transparent;
       cursor: pointer;
-      background: linear-gradient(180deg, #3a3a3a, #2d2d2d 55%, #252525);
-      border-radius: 6px;
-      color: #666;
-      font-size: 20px; /* 十字键箭头 ↑↓←→ */
-      font-family: var(--pixel);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      box-shadow:
-        inset 2px 2px 3px rgba(255, 255, 255, 0.12),
-        inset -2px -3px 4px rgba(0, 0, 0, 0.55),
-        0 4px 0 rgba(0, 0, 0, 0.35),
-        0 8px 12px rgba(0, 0, 0, 0.22);
-      transition: transform 0.06s, box-shadow 0.06s;
       z-index: 1;
     }
-    .dkey:active {
-      transform: translateY(4px);
-      box-shadow:
-        inset 2px 2px 3px rgba(255, 255, 255, 0.12),
-        inset -2px -3px 4px rgba(0, 0, 0, 0.55),
-        0 0 0 rgba(0, 0, 0, 0.35),
-        0 2px 4px rgba(0, 0, 0, 0.18);
-    }
-    .dkey:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; z-index: 5; }
-    .dkey.up   { top: 0; left: 50%; transform: translateX(-50%); width: 48px; height: 54px; border-radius: 8px 8px 4px 4px; }
-    .dkey.down { bottom: 0; left: 50%; transform: translateX(-50%); width: 48px; height: 54px; border-radius: 4px 4px 8px 8px; }
-    .dkey.left { left: 0; top: 50%; transform: translateY(-50%); width: 54px; height: 48px; border-radius: 8px 4px 4px 8px; }
-    .dkey.right{ right: 0; top: 50%; transform: translateY(-50%); width: 54px; height: 48px; border-radius: 4px 8px 8px 4px; }
-    .dkey.up:active, .dkey.down:active   { transform: translateX(-50%) translateY(4px); }
-    .dkey.left:active, .dkey.right:active { transform: translateY(calc(-50% + 4px)); }
-    /* 中心凹陷圆点 */
-    .dpad-center {
-      position: absolute;
-      left: 50%;
-      top: 50%;
-      transform: translate(-50%, -50%);
-      width: 46px;
-      height: 46px;
-      border-radius: 50%;
-      background: radial-gradient(circle at 45% 40%, #3a3a3a, #222 65%, #191919);
-      box-shadow:
-        inset 0 4px 8px rgba(0, 0, 0, 0.75),
-        inset 0 -2px 3px rgba(255, 255, 255, 0.06);
-      pointer-events: none;
-      z-index: 2;
-    }
+    .dpad-arm.up    { top: 0; left: 48px; width: 56px; height: 72px; }
+    .dpad-arm.down  { bottom: 0; left: 48px; width: 56px; height: 72px; }
+    .dpad-arm.left  { left: 0; top: 48px; width: 72px; height: 56px; }
+    .dpad-arm.right { right: 0; top: 48px; width: 72px; height: 56px; }
+    .dpad-arm:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+    /* 按压：顶面下沉 3px，侧壁厚度塌缩 */
+    .dpad:has(.dpad-arm:active) .faceG { transform: translateY(3px); }
+    .dpad:has(.dpad-arm:active) .thickG { transform: translate(1px, 0); }
 
     /* ---------- ABXY 红键（菱形排列，嵌在凹槽基座中） ---------- */
     .abxy {
@@ -300,42 +271,67 @@
         inset 0 3px 8px rgba(90, 70, 40, 0.16),
         inset 0 -2px 4px rgba(255, 255, 255, 0.55);
     }
+    /* 3D 立体按键三层：顶面 face + 侧壁厚度 thick + 底部凹槽 well（参考 Uiverse Z4drus） */
+    .face {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      transition: transform 0.06s, border-radius 0.06s;
+    }
+    .thick {
+      position: absolute;
+      z-index: 1;
+      top: 3px;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.35);
+      transition: transform 0.06s;
+    }
+    .well {
+      position: absolute;
+      z-index: 0;
+      top: 0;
+      left: -1px;
+      width: calc(100% + 2px);
+      height: calc(100% + 2px);
+      border-radius: 50%;
+      background: rgba(0, 0, 0, 0.12);
+      box-shadow: inset 0 3px 6px rgba(0, 0, 0, 0.25), 0 1px 1px rgba(255, 255, 255, 0.75);
+      transition: border-radius 0.06s;
+    }
+    /* 按压：顶面下沉 3px，侧壁厚度随之塌缩 */
+    .rkey:active .face { transform: translateY(3px); border-radius: 45%; }
+    .rkey:active .thick { transform: translateY(-3px); }
+
     .rkey {
       position: absolute;
       width: 50px;
       height: 50px;
       border: none;
+      padding: 0;
+      background: transparent;
       cursor: pointer;
-      border-radius: 50%;
-      background: radial-gradient(circle at 38% 32%, #f05c5c, #c62a2a 60%, #9e1e1e);
-      box-shadow:
-        inset 3px 3px 6px rgba(255, 255, 255, 0.45),
-        inset -3px -3px 5px rgba(0, 0, 0, 0.55),
-        0 5px 0 rgba(0, 0, 0, 0.3),
-        0 10px 16px rgba(0, 0, 0, 0.28);
+    }
+    .rkey .face {
       color: #fff;
       font-family: var(--pixel);
       font-size: 14px; /* 红键字母 A/B/X/Y */
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: transform 0.06s, box-shadow 0.06s;
+      background: radial-gradient(circle at 38% 32%, #f05c5c, #c62a2a 60%, #9e1e1e);
+      box-shadow: inset 3px 3px 6px rgba(255, 255, 255, 0.45), inset -3px -3px 5px rgba(0, 0, 0, 0.55);
     }
-    .rkey:active {
-      transform: translateY(4px);
-      box-shadow:
-        inset 3px 3px 6px rgba(255, 255, 255, 0.45),
-        inset -3px -3px 5px rgba(0, 0, 0, 0.55),
-        0 1px 0 rgba(0, 0, 0, 0.3),
-        0 3px 6px rgba(0, 0, 0, 0.2);
-    }
+    .rkey .thick { background: radial-gradient(circle at 38% 32%, #d64545, #a32a2a 60%, #7d1b1b); }
     .rkey:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
     .rkey.top    { top: 6px; left: 50%; transform: translateX(-50%); }
     .rkey.bottom { bottom: 6px; left: 50%; transform: translateX(-50%); }
     .rkey.left   { left: 6px; top: 50%; transform: translateY(-50%); }
     .rkey.right  { right: 6px; top: 50%; transform: translateY(-50%); }
-    .rkey.top:active, .rkey.bottom:active { transform: translateX(-50%) translateY(4px); }
-    .rkey.left:active, .rkey.right:active { transform: translateY(calc(-50% + 4px)); }
 
     /* ---------- 功能黑键（底部中间 3 个） ---------- */
     .gamepad-mid {
@@ -448,10 +444,11 @@
       .screen-body { flex-direction: column; }
       textarea, .rich-input, .preview-box { font-size: 0.9rem; } /* 手机端：正文 */
       .gamepad { padding-top: 14px; }
-      .dpad, .abxy { width: 120px; height: 120px; }
-      .dkey.up, .dkey.down { width: 38px; height: 42px; }
-      .dkey.left, .dkey.right { width: 42px; height: 38px; }
+      .abxy { width: 120px; height: 120px; }
       .rkey { width: 42px; height: 42px; }
+      .dpad { width: 120px; height: 120px; }
+      .dpad-arm.up, .dpad-arm.down { left: 38px; width: 44px; height: 56px; }
+      .dpad-arm.left, .dpad-arm.right { top: 38px; width: 56px; height: 44px; }
       .gamepad-mid { gap: 14px; }
       .fkey { width: 40px; height: 40px; }
     }
@@ -493,13 +490,51 @@
 
     <!-- 掌机控制台 -->
     <div class="gamepad">
-      <!-- 左：十字键 D-Pad -->
+      <!-- 左：十字键 D-Pad（一体化 SVG 弧面 + 四个透明按压区） -->
       <div class="dpad">
-        <button class="dkey up" aria-label="上一条历史记录">↑</button>
-        <button class="dkey down" aria-label="下一条历史记录">↓</button>
-        <button class="dkey left" aria-label="左（预留）">←</button>
-        <button class="dkey right" aria-label="右（预留）">→</button>
-        <div class="dpad-center"></div>
+        <svg class="dpad-face" viewBox="0 0 120 120" aria-hidden="true">
+          <defs>
+            <radialGradient id="dpadDome" cx="35%" cy="30%" r="75%">
+              <stop offset="0%" stop-color="#4b4e55"/>
+              <stop offset="55%" stop-color="#2e3037"/>
+              <stop offset="100%" stop-color="#1f2126"/>
+            </radialGradient>
+          </defs>
+          <!-- 底部凹槽 well（按参考图标形状，放大 1.06 半透明暗） -->
+          <g class="wellG">
+            <g transform="translate(60 60) scale(1.06) translate(-60 -60)">
+              <g transform="scale(0.1172)">
+                <path d="M847.644444 295.822222h-119.466666V176.355556c0-79.644444-62.577778-142.222222-142.222222-142.222223H438.044444C358.4 34.133333 295.822222 96.711111 295.822222 176.355556v119.466666H176.355556C96.711111 295.822222 34.133333 358.4 34.133333 438.044444v142.222223c0 79.644444 62.577778 142.222222 142.222223 142.222222h119.466666v119.466667c0 79.644444 62.577778 142.222222 142.222222 142.222222h142.222223c79.644444 0 142.222222-62.577778 142.222222-142.222222v-119.466667h119.466667c79.644444 0 142.222222-62.577778 142.222222-142.222222V438.044444c5.688889-73.955556-56.888889-142.222222-136.533334-142.222222z" fill="rgba(0,0,0,0.16)"/>
+                <path d="M517.688889 119.466667H512L432.355556 221.866667c0 5.688889 0 5.688889 5.688888 5.688889h153.6c5.688889 0 5.688889-5.688889 5.688889-5.688889L517.688889 119.466667zM796.444444 432.355556v153.6c0 5.688889 5.688889 5.688889 5.688888L904.533333 512v-5.688889l-102.4-79.644444-5.688889 5.688889zM432.355556 796.444444c-5.688889 0-5.688889 5.688889-5.688889 5.688889l79.644444 102.4H512l79.644444-102.4c0-5.688889 0-5.688889-5.688888-5.688889H432.355556zM221.866667 432.355556L119.466667 506.311111V512l102.4 79.644444c5.688889 0 5.688889 0 5.688889-5.688888V432.355556s-5.688889-5.688889-5.688889 0z" fill="rgba(0,0,0,0.16)"/>
+              </g>
+            </g>
+          </g>
+          <!-- 侧壁厚度 thick（下移3px右移1px，深色 = 键帽厚度） -->
+          <g class="thickG">
+            <g transform="scale(0.1172)">
+              <path d="M847.644444 295.822222h-119.466666V176.355556c0-79.644444-62.577778-142.222222-142.222222-142.222223H438.044444C358.4 34.133333 295.822222 96.711111 295.822222 176.355556v119.466666H176.355556C96.711111 295.822222 34.133333 358.4 34.133333 438.044444v142.222223c0 79.644444 62.577778 142.222222 142.222223 142.222222h119.466666v119.466667c0 79.644444 62.577778 142.222222 142.222222 142.222222h142.222223c79.644444 0 142.222222-62.577778 142.222222-142.222222v-119.466667h119.466667c79.644444 0 142.222222-62.577778 142.222222-142.222222V438.044444c5.688889-73.955556-56.888889-142.222222-136.533334-142.222222z" fill="#14161a"/>
+              <path d="M517.688889 119.466667H512L432.355556 221.866667c0 5.688889 0 5.688889 5.688888 5.688889h153.6c5.688889 0 5.688889-5.688889 5.688889-5.688889L517.688889 119.466667zM796.444444 432.355556v153.6c0 5.688889 5.688889 5.688889 5.688888L904.533333 512v-5.688889l-102.4-79.644444-5.688889 5.688889zM432.355556 796.444444c-5.688889 0-5.688889 5.688889-5.688889 5.688889l79.644444 102.4H512l79.644444-102.4c0-5.688889 0-5.688889-5.688888-5.688889H432.355556zM221.866667 432.355556L119.466667 506.311111V512l102.4 79.644444c5.688889 0 5.688889 0 5.688889-5.688888V432.355556s-5.688889-5.688889-5.688889 0z" fill="#14161a"/>
+            </g>
+          </g>
+          <!-- 顶面 face（参考图标原样 + 中心凹槽） -->
+          <g class="faceG">
+            <g transform="scale(0.1172)">
+              <path d="M847.644444 295.822222h-119.466666V176.355556c0-79.644444-62.577778-142.222222-142.222222-142.222223H438.044444C358.4 34.133333 295.822222 96.711111 295.822222 176.355556v119.466666H176.355556C96.711111 295.822222 34.133333 358.4 34.133333 438.044444v142.222223c0 79.644444 62.577778 142.222222 142.222223 142.222222h119.466666v119.466667c0 79.644444 62.577778 142.222222 142.222222 142.222222h142.222223c79.644444 0 142.222222-62.577778 142.222222-142.222222v-119.466667h119.466667c79.644444 0 142.222222-62.577778 142.222222-142.222222V438.044444c5.688889-73.955556-56.888889-142.222222-136.533334-142.222222z" fill="url(#dpadDome)"/>
+              <path d="M517.688889 119.466667H512L432.355556 221.866667c0 5.688889 0 5.688889 5.688888 5.688889h153.6c5.688889 0 5.688889-5.688889 5.688889-5.688889L517.688889 119.466667zM796.444444 432.355556v153.6c0 5.688889 5.688889 5.688889 5.688888L904.533333 512v-5.688889l-102.4-79.644444-5.688889 5.688889zM432.355556 796.444444c-5.688889 0-5.688889 5.688889-5.688889 5.688889l79.644444 102.4H512l79.644444-102.4c0-5.688889 0-5.688889-5.688888-5.688889H432.355556zM221.866667 432.355556L119.466667 506.311111V512l102.4 79.644444c5.688889 0 5.688889 0 5.688889-5.688888V432.355556s-5.688889-5.688889-5.688889 0z" fill="url(#dpadDome)"/>
+            </g>
+            <!-- 四向箭头 -->
+            <path d="M60 18 66 28H63V48H57V28H54Z" fill="#b8bdc4"/>
+            <path d="M60 102 54 92H57V72H63V92H66Z" fill="#b8bdc4"/>
+            <path d="M18 60 28 54V57H48V63H28V66Z" fill="#b8bdc4"/>
+            <path d="M102 60 92 54V57H72V63H92V66Z" fill="#b8bdc4"/>
+            <circle cx="60" cy="60" r="14" fill="#1a1c21"/>
+            <circle cx="60" cy="60" r="14" fill="none" stroke="#3a3d44" stroke-width="2"/>
+          </g>
+        </svg>
+        <button class="dpad-arm up" aria-label="上一条历史记录"></button>
+        <button class="dpad-arm down" aria-label="下一条历史记录"></button>
+        <button class="dpad-arm left" aria-label="左（预留）"></button>
+        <button class="dpad-arm right" aria-label="右（预留）"></button>
       </div>
 
       <!-- 中下：3 个功能黑键 -->
@@ -514,17 +549,17 @@
           <span class="fkey-label">历史记录</span>
         </div>
         <div class="fnkey">
-          <button class="fkey" id="settingsKey" aria-label="设置"></button>
-          <span class="fkey-label">设置</span>
+          <button class="fkey" id="settingsKey" aria-label="音效开关"></button>
+          <span class="fkey-label">音效</span>
         </div>
       </div>
 
       <!-- 右：ABXY 红键（菱形） -->
       <div class="abxy">
-        <button class="rkey top" id="aKey" aria-label="复制">A</button>
-        <button class="rkey bottom" id="bKey" aria-label="清空">B</button>
-        <button class="rkey left" id="xKey" aria-label="X 键（预留）">X</button>
-        <button class="rkey right" id="yKey" aria-label="Y 键（预留）">Y</button>
+        <button class="rkey top" id="aKey" aria-label="复制"><span class="face">A</span><span class="thick"></span><span class="well"></span></button>
+        <button class="rkey bottom" id="bKey" aria-label="清空"><span class="face">B</span><span class="thick"></span><span class="well"></span></button>
+        <button class="rkey left" id="xKey" aria-label="X 键（预留）"><span class="face">X</span><span class="thick"></span><span class="well"></span></button>
+        <button class="rkey right" id="yKey" aria-label="Y 键（预留）"><span class="face">Y</span><span class="thick"></span><span class="well"></span></button>
       </div>
     </div>
 
@@ -691,21 +726,69 @@
       showToast('历史 ' + (histCursor + 1) + ' / ' + list.length);
     }
 
+    /* ============ 音效（Web Audio 合成，无需音频文件） ============ */
+    let soundOn = localStorage.getItem('retroSoundOn') !== 'off';
+    let masterVol = 1.2; /* 总音量 0~1：想整体变大改大、变小改小（例如 0.5 / 1.0） */
+    let audioCtx = null;
+    function ensureCtx() {
+      try {
+        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        return audioCtx;
+      } catch { return null; }
+    }
+    function tone(freq, dur, type, vol, delay) {
+      if (!soundOn) return;
+      const ctx = ensureCtx();
+      if (!ctx) return;
+      try {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = type || 'square';
+        osc.frequency.value = freq;
+        const t = ctx.currentTime + (delay || 0);
+        gain.gain.setValueAtTime(0.0001, t);
+        gain.gain.exponentialRampToValueAtTime((vol || 0.06) * masterVol, t + 0.006);
+        gain.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(t);
+        osc.stop(t + dur + 0.03);
+      } catch {}
+    }
+    const SFX = {
+      click:  () => tone(180, 0.05, 'square', 0.05),
+      switch: () => { tone(520, 0.07, 'square', 0.06); tone(780, 0.09, 'square', 0.05, 0.06); },
+      copy:   () => { tone(660, 0.06, 'triangle', 0.08); tone(880, 0.12, 'triangle', 0.08, 0.07); },
+      clear:  () => { tone(360, 0.05, 'square', 0.05); tone(240, 0.08, 'square', 0.04, 0.05); },
+      error:  () => tone(130, 0.16, 'sawtooth', 0.05),
+      on:     () => { tone(520, 0.06, 'triangle', 0.08); tone(700, 0.08, 'triangle', 0.08, 0.06); },
+    };
+    function showError(msg) { SFX.error(); showToast(msg); }
+    /* 所有掌机按键按下统一发出"咔哒"声 */
+    document.querySelector('.gamepad').addEventListener('click', () => SFX.click());
+
     /* ============ 掌机按键绑定 ============ */
     document.getElementById('aKey').addEventListener('click', () => { saveHistory(); copyOutput(); });
     document.getElementById('bKey').addEventListener('click', clearAll);
-    document.getElementById('xKey').addEventListener('click', () => showToast('X 键预留'));
-    document.getElementById('yKey').addEventListener('click', () => showToast('Y 键预留'));
-    document.querySelector('.dkey.up').addEventListener('click', () => histNavigate(1));
-    document.querySelector('.dkey.down').addEventListener('click', () => histNavigate(-1));
-    document.querySelector('.dkey.left').addEventListener('click', () => showToast('方向键左预留'));
-    document.querySelector('.dkey.right').addEventListener('click', () => showToast('方向键右预留'));
+    document.getElementById('xKey').addEventListener('click', () => showError('X 键预留'));
+    document.getElementById('yKey').addEventListener('click', () => showError('Y 键预留'));
+    document.querySelector('.dpad-arm.up').addEventListener('click', () => histNavigate(1));
+    document.querySelector('.dpad-arm.down').addEventListener('click', () => histNavigate(-1));
+    document.querySelector('.dpad-arm.left').addEventListener('click', () => showError('方向键左预留'));
+    document.querySelector('.dpad-arm.right').addEventListener('click', () => showError('方向键右预留'));
     document.getElementById('fmtKey').addEventListener('click', () => {
       applyFormat(currentFormat === 'md2html' ? 'html2md' : 'md2html');
+      SFX.switch();
       showToast('已切换：' + FORMATS[currentFormat].label);
     });
     document.getElementById('histKey').addEventListener('click', (e) => { e.stopPropagation(); toggleHistory(); });
-    document.getElementById('settingsKey').addEventListener('click', () => showToast('设置待开发'));
+    document.getElementById('settingsKey').addEventListener('click', () => {
+      soundOn = !soundOn;
+      localStorage.setItem('retroSoundOn', soundOn ? 'on' : 'off');
+      showToast(soundOn ? '音效已开启' : '音效已关闭');
+      if (soundOn) SFX.on();
+    });
 
     /* ============ 清空 ============ */
     function clearAll() {
@@ -713,6 +796,7 @@
       richInput.innerHTML = '';
       preview.innerHTML = '';
       updateStats();
+      SFX.clear();
       showToast('已清空');
     }
 
@@ -725,7 +809,7 @@
       const file = e.dataTransfer.files && e.dataTransfer.files[0];
       if (!file) return;
       const ext = (file.name.split('.').pop() || '').toLowerCase();
-      if (!['md', 'txt', 'html'].includes(ext)) { showToast('仅支持 .md / .txt / .html 文件'); return; }
+      if (!['md', 'txt', 'html'].includes(ext)) { showError('仅支持 .md / .txt / .html 文件'); return; }
       const reader = new FileReader();
       reader.onload = (ev) => { FORMATS[currentFormat].setSource(ev.target.result); render(); showToast('已载入 ' + file.name); };
       reader.readAsText(file, 'utf-8');
@@ -781,11 +865,11 @@
     }
     async function copyOutput() {
       const rawHTML = preview.innerHTML;
-      if (!rawHTML.trim()) { showToast('没有可复制的内容'); return; }
+      if (!rawHTML.trim()) { showError('没有可复制的内容'); return; }
       if (currentFormat === 'html2md') {
         const md = preview.textContent || '';
-        try { await navigator.clipboard.writeText(md); showToast('Markdown 源码已复制'); }
-        catch { showToast('复制失败'); }
+        try { await navigator.clipboard.writeText(md); SFX.copy(); showToast('Markdown 源码已复制'); }
+        catch { showError('复制失败'); }
         return;
       }
       const cleanHTML = buildCleanHTML(rawHTML);
@@ -796,10 +880,11 @@
           'text/plain': new Blob([plainText], { type: 'text/plain' })
         });
         await navigator.clipboard.write([item]);
+        SFX.copy();
         showToast('富文本已复制到剪贴板');
       } catch {
-        try { await navigator.clipboard.writeText(plainText); showToast('已复制纯文本（含表格对齐）'); }
-        catch { showToast('复制失败，请手动选择预览区'); }
+        try { await navigator.clipboard.writeText(plainText); SFX.copy(); showToast('已复制纯文本（含表格对齐）'); }
+        catch { showError('复制失败，请手动选择预览区'); }
       }
     }
 
